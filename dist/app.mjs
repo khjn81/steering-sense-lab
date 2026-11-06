@@ -305,6 +305,7 @@ for (const event of ['pointerup', 'pointercancel', 'lostpointercapture']) $('whe
   steeringPointer = null; $('wheelPad').classList.remove('dragging');
 });
 document.addEventListener('keydown', e => {
+  if ($('aboutDialog').open) return;
   const editing = e.target.isContentEditable || ['TEXTAREA', 'SELECT'].includes(e.target.tagName) || (e.target.tagName === 'INPUT' && e.target.type !== 'range');
   if (e.ctrlKey || e.metaKey || e.altKey || editing) return;
   if (state.mode === 'free' && ['ArrowUp', 'KeyW', 'ArrowDown', 'KeyS'].includes(e.code)) {
