@@ -66,6 +66,9 @@ export class HandController {
   tick(generation) {
     if (generation !== this.generation || !this.active) return;
     const now = performance.now();
+    if (this.busy && now - this.lastTick > 2000) {
+      this.stop(); this.onChange('error', '손 인식 응답이 늦어 카메라를 껐어요. 직접 조작하거나 카메라를 다시 켜주세요.'); return;
+    }
     if (!this.busy && now - this.lastTick >= 50 && this.video.readyState >= 2 && this.video.currentTime !== this.lastVideoTime) {
       this.busy = true; this.lastTick = now; this.lastVideoTime = this.video.currentTime;
       createImageBitmap(this.video).then(bitmap => {

@@ -39,3 +39,15 @@ test('future synthetic observations stop movement and recovery requires a new st
   await expect(page.locator('#cameraStatus')).toHaveText('손으로 조작 중');
   expect(await page.locator('#driveButtonText').textContent()).not.toBe('멈추기');
 });
+
+test('a stalled synthetic worker releases camera resources and allows a fresh retry', async ({ page }) => {
+  await enterCamera(page); await page.locator('#calibrateButton').click();
+  await page.locator('#reverseGear').click();
+  await page.evaluate(() => { window.__stallHandWorker = true; });
+  await expect(page.locator('#cameraError')).toContainText('응답');
+  await expect(page.locator('#steerRange')).toBeEnabled();
+  expect((await page.evaluate(() => window.__cameraFixture)).stoppedTracks).toBeGreaterThan(0);
+  await page.evaluate(() => { window.__stallHandWorker = false; });
+  await page.locator('#cameraButton').click();
+  await expect(page.locator('#calibrateButton')).toBeEnabled();
+});
