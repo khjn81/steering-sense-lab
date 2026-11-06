@@ -333,7 +333,10 @@ $('cameraButton').addEventListener('click', async () => {
   catch (error) { $('cameraError').hidden = false; text('cameraError', error.message || '카메라를 켜지 못했어요. 직접 조작으로 연습해주세요.'); }
   finally { cameraBusy = false; $('cameraButton').disabled = false; $('cameraButton').querySelector('span').textContent = '카메라 켜고 손으로 조작'; updateCamera(camera.active ? cameraState : 'off'); renderUI(); }
 });
-$('calibrateButton').addEventListener('click', () => { pause('가운데 자세를 맞췄어요. 출발 버튼을 눌러주세요.'); camera.calibrate(); });
+$('calibrateButton').addEventListener('click', () => {
+  pause('가운데 자세를 확인하고 있어요.');
+  text('runStatus', camera.calibrate() ? '가운데 자세를 맞췄어요. 출발 버튼을 눌러주세요.' : '아직 가운데 자세를 맞추지 못했어요. 양손을 잠깐 고정하고 다시 눌러주세요.');
+});
 $('stopCamera').addEventListener('click', () => { pause(); camera.stop(); cameraBusy = false; text('runStatus', '마우스나 터치로 이어서 조작할 수 있어요'); renderUI(); });
 window.addEventListener('blur', () => { if (state.running || state.replaying || state.modelPlaying || state.pendingDriveUntil) pause('화면을 벗어나서 잠깐 멈췄어요'); });
 document.addEventListener('visibilitychange', () => { if (document.hidden) { pause('화면을 벗어나서 잠깐 멈췄어요'); if (camera.active || cameraBusy) { camera.stop(); cameraBusy = false; } } });
