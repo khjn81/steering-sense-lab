@@ -1,0 +1,781 @@
+{
+  "status": "20 rounds and local final checks passed; public CI pending.",
+  "rubric": "rubric-v1",
+  "baseline": {
+    "sourceCommit": "6801ec2",
+    "unit": {
+      "passed": 35,
+      "failed": 0
+    },
+    "browser": {
+      "startTime": "2026-11-06T02:10:08.635Z",
+      "duration": 20026.211,
+      "expected": 5,
+      "skipped": 0,
+      "unexpected": 7,
+      "flaky": 0
+    },
+    "ratings": [3, 2, 3, 3, 3, 3, 1, 1, 2, 3, 2, 2, 1, 0, 3, 2, 2, 0, 2, 1],
+    "score": 39,
+    "judgment": "Implementation-agent judgments, not independent human ratings, physical-device learning studies, or actual driving validation.",
+    "publicRootCommit": "a582f335562fa04754973386c2baaa7ce326293e"
+  },
+  "rounds": [
+    {
+      "round": 1,
+      "observation": "Frozen help-dialog case failed: holdingW behind the native modal starts movement.",
+      "hypothesis": "Ignoring app driving shortcuts while help is open preserves modal isolation.",
+      "change": "Guard document shortcut handling when the help dialog is open; retain native Escape/focus behavior.",
+      "assessment": "Dialog criterion1\u21924 after actual keyboard/modal regression and complete manual visit pass; unchanged physics35 must pass.",
+      "decision": "keep",
+      "score": 42,
+      "attempts": 1,
+      "measurements": {
+        "unit": {
+          "exit": 0,
+          "durationMs": 6899
+        },
+        "syntax": {
+          "exit": 0,
+          "durationMs": 57
+        },
+        "e2e": {
+          "exit": 0,
+          "durationMs": 2822,
+          "stats": {
+            "startTime": "2026-11-06T02:13:28.661Z",
+            "duration": 2291.773,
+            "expected": 2,
+            "skipped": 0,
+            "unexpected": 0,
+            "flaky": 0
+          }
+        }
+      },
+      "sourceHash": "156fe734d4131688d5b0fa3075a98089a655fa724fae2c7e9e7cebf39df96278",
+      "criterionScores": [
+        3, 2, 3, 3, 3, 3, 1, 4, 2, 3, 2, 2, 1, 0, 3, 2, 2, 0, 2, 1
+      ]
+    },
+    {
+      "round": 2,
+      "observation": "Frozen range case failed: ArrowUp starts driving and prevents native slider adjustment.",
+      "hypothesis": "Respect native keyboard behavior for every form control before handling driving keys.",
+      "change": "Exclude input,select,textarea,summary and editable content from driving shortcuts; keep button and scene driving keys.",
+      "assessment": "Native-key criterion2\u21924 after real range semantics and full manual visit pass.",
+      "decision": "keep",
+      "score": 44,
+      "attempts": 1,
+      "measurements": {
+        "unit": {
+          "exit": 0,
+          "durationMs": 7218
+        },
+        "syntax": {
+          "exit": 0,
+          "durationMs": 61
+        },
+        "e2e": {
+          "exit": 0,
+          "durationMs": 3145,
+          "stats": {
+            "startTime": "2026-11-06T02:14:24.615Z",
+            "duration": 2472.342,
+            "expected": 2,
+            "skipped": 0,
+            "unexpected": 0,
+            "flaky": 0
+          }
+        }
+      },
+      "sourceHash": "cc194f601398b81346c106b553c137b4d2354f16feb719f759d92721b777cda9",
+      "criterionScores": [
+        3, 4, 3, 3, 3, 3, 1, 4, 2, 3, 2, 2, 1, 0, 3, 2, 2, 0, 2, 1
+      ]
+    },
+    {
+      "round": 3,
+      "observation": "Frozen Escape case failed: moving simulation ignores Escape.",
+      "hypothesis": "A dedicated stop shortcut cancels manual movement, replay and queued camera movement without changing native modal Escape.",
+      "change": "Handle Escape before editing guards, route through the existing explicit stop/cancellation function, and label the shortcut.",
+      "assessment": "Stop-key criterion0\u21924 after immediate stop and normal manual/model interactions pass. First selector also selected the baseline pagehide defect; keep that failed diagnostic and retest only the intended independent paths before lifecycle round4.",
+      "decision": "keep",
+      "score": 48,
+      "attempts": 2,
+      "measurements": {
+        "unit": {
+          "exit": 0,
+          "durationMs": 6971
+        },
+        "syntax": {
+          "exit": 0,
+          "durationMs": 53
+        },
+        "e2e": {
+          "exit": 0,
+          "durationMs": 1489,
+          "stats": {
+            "startTime": "2026-11-06T02:17:12.189Z",
+            "duration": 1109.619,
+            "expected": 1,
+            "skipped": 0,
+            "unexpected": 0,
+            "flaky": 0
+          }
+        }
+      },
+      "sourceHash": "6ed8cb394b7b2c5537c4ca0972f7a8bcdaa1c43b36a1afb094bcd4d62343e9d1",
+      "criterionScores": [
+        3, 4, 3, 3, 3, 3, 1, 4, 2, 3, 2, 2, 1, 4, 3, 2, 2, 0, 2, 1
+      ]
+    },
+    {
+      "round": 4,
+      "observation": "Frozen pagehide case failed: a model keeps playing through page-cache entry; camera-only cleanup ignored model movement.",
+      "hypothesis": "Page lifecycle entry must explicitly pause every simulation mode before closing camera resources.",
+      "change": "Pause running/model/replay/queued movement onpagehide, close camera and return controls to an idle state without automatic restart.",
+      "assessment": "Visibility/lifecycle remains partial until hidden-draw failure is fixed; page-cache model stop is now executed. Reapplied and repeated after isolating the round3 selector diagnostic; original assertions are unchanged.",
+      "decision": "keep",
+      "score": 49,
+      "attempts": 2,
+      "measurements": {
+        "unit": {
+          "exit": 0,
+          "durationMs": 7052
+        },
+        "syntax": {
+          "exit": 0,
+          "durationMs": 63
+        },
+        "e2e": {
+          "exit": 0,
+          "durationMs": 3103,
+          "stats": {
+            "startTime": "2026-11-06T02:18:22.270Z",
+            "duration": 2545.371,
+            "expected": 3,
+            "skipped": 0,
+            "unexpected": 0,
+            "flaky": 0
+          }
+        }
+      },
+      "sourceHash": "b781c56556cd3a7b1a87f2a2d2a177154d7a40efa2b4e3fe51fefedf7b92b203",
+      "criterionScores": [
+        3, 4, 3, 3, 3, 3, 2, 4, 2, 3, 2, 2, 1, 4, 3, 2, 2, 0, 2, 1
+      ]
+    },
+    {
+      "round": 5,
+      "observation": "Frozen hidden-document case failed: fallback2D repaints on every animation frame despite page visibility pause.",
+      "hypothesis": "Skip world advancement and drawing while hidden, keeping the timing origin current.",
+      "change": "Return before simulation/render work when document.hidden; retain a single animation chain and avoid catch-up movement.",
+      "assessment": "Visibility criterion2\u21924 after hidden-draw counter, page-cache pause and manual visit pass; no battery percentage claimed.",
+      "decision": "keep",
+      "score": 51,
+      "attempts": 1,
+      "measurements": {
+        "unit": {
+          "exit": 0,
+          "durationMs": 6929
+        },
+        "syntax": {
+          "exit": 0,
+          "durationMs": 56
+        },
+        "e2e": {
+          "exit": 0,
+          "durationMs": 2782,
+          "stats": {
+            "startTime": "2026-11-06T02:19:41.087Z",
+            "duration": 2399.917,
+            "expected": 3,
+            "skipped": 0,
+            "unexpected": 0,
+            "flaky": 0
+          }
+        }
+      },
+      "sourceHash": "342d3468f91ed960f6a4f378b75c29d798089415eb077e962457e8d79ad58e2e",
+      "criterionScores": [
+        3, 4, 3, 3, 3, 3, 4, 4, 2, 3, 2, 2, 1, 4, 3, 2, 2, 0, 2, 1
+      ]
+    },
+    {
+      "round": 6,
+      "observation": "New synthetic-video probe: stable calibration passes, but unstable hands returnfalse while runStatus claims calibration succeeded.",
+      "hypothesis": "Calibration feedback must depend on the actual calibration result while movement stays paused.",
+      "change": "Report success only when calibrate returns true; otherwise provide retry guidance without enabling driving.",
+      "assessment": "Score stays51: calibration feedback corrected, while malformed/future tracking observations remain pending. Synthetic camera/video/landmarks only; no human-hand accuracy claim.",
+      "decision": "keep",
+      "score": 51,
+      "attempts": 1,
+      "measurements": {
+        "unit": {
+          "exit": 0,
+          "durationMs": 6901
+        },
+        "syntax": {
+          "exit": 0,
+          "durationMs": 53
+        },
+        "e2e": {
+          "exit": 0,
+          "durationMs": 3942,
+          "stats": {
+            "startTime": "2026-11-06T02:22:07.294Z",
+            "duration": 3559.7929999999997,
+            "expected": 3,
+            "skipped": 0,
+            "unexpected": 0,
+            "flaky": 0
+          }
+        }
+      },
+      "sourceHash": "e7558450e8fd607b93a0beddb1d07ae889d418f96bea5b4e56983b5802381167",
+      "criterionScores": [
+        3, 4, 3, 3, 3, 3, 4, 4, 2, 3, 2, 2, 1, 4, 3, 2, 2, 0, 2, 1
+      ]
+    },
+    {
+      "round": 7,
+      "observation": "New negative probes throw on sparse/object/null landmarks and invalid callbacks attempt to draw undefined points.",
+      "hypothesis": "Validate the complete21-point shape and video dimensions before measuring or drawing.",
+      "change": "Require two complete finite in-frame landmark arrays; reject malformed dimensions and clear the overlay for rejected input.",
+      "assessment": "Score stays51 pending timestamp correction. Red-before unit counterexamples cover sparse and malformed input; valid synthetic steering remains operational.",
+      "decision": "keep",
+      "score": 51,
+      "attempts": 1,
+      "measurements": {
+        "unit": {
+          "exit": 0,
+          "durationMs": 6941
+        },
+        "syntax": {
+          "exit": 0,
+          "durationMs": 55
+        },
+        "e2e": {
+          "exit": 0,
+          "durationMs": 3877,
+          "stats": {
+            "startTime": "2026-11-06T02:23:28.378Z",
+            "duration": 3499.6989999999996,
+            "expected": 3,
+            "skipped": 0,
+            "unexpected": 0,
+            "flaky": 0
+          }
+        }
+      },
+      "sourceHash": "d6a435f700816d173626b687cc34554bfa65bee973ce0ce146f2d4e9e3870f21",
+      "criterionScores": [
+        3, 4, 3, 3, 3, 3, 4, 4, 2, 3, 2, 2, 1, 4, 3, 2, 2, 0, 2, 1
+      ]
+    },
+    {
+      "round": 8,
+      "observation": "Two new unit counterexamples and a synthetic-browser future-timestamp case fail: future/reordered input can refresh calibrated movement.",
+      "hypothesis": "Freshness must be finite, monotonic and based on capture time, not receipt time.",
+      "change": "Reject future,negative,nonfinite,stale or reordered timestamps; invalidate freshness on rejected temporal input and preserve the captured timestamp on valid results.",
+      "assessment": "Tracking criterion2\u21924 after negative shape/time probes and synthetic stop/recovery behavior pass. Recovery does not auto-start; actual-hand model accuracy remains unverified.",
+      "decision": "keep",
+      "score": 53,
+      "attempts": 1,
+      "measurements": {
+        "unit": {
+          "exit": 0,
+          "durationMs": 6958
+        },
+        "syntax": {
+          "exit": 0,
+          "durationMs": 55
+        },
+        "e2e": {
+          "exit": 0,
+          "durationMs": 5205,
+          "stats": {
+            "startTime": "2026-11-06T02:25:29.320Z",
+            "duration": 4826.617,
+            "expected": 4,
+            "skipped": 0,
+            "unexpected": 0,
+            "flaky": 0
+          }
+        }
+      },
+      "sourceHash": "0007b09f93fabfd5b38e526634cc71357c3c8a2051c8c45a1fdd6d23ce19a5bb",
+      "criterionScores": [
+        3, 4, 3, 3, 3, 3, 4, 4, 2, 3, 4, 2, 1, 4, 3, 2, 2, 0, 2, 1
+      ]
+    },
+    {
+      "round": 9,
+      "observation": "New worker-stall browser probe times out: a missing response leaves camera/worker busy indefinitely with no retry feedback.",
+      "hypothesis": "Bound each frame-response wait and fail back to deliberate manual/retry controls.",
+      "change": "After2s without a frame response, stop owned camera/worker/frame work and show a retry message. Initialization retains its separate45s bound.",
+      "assessment": "Score stays53 until remaining device-end/cancellation boundaries are handled. Stall probe is red before; cleanup and fresh retry must pass.",
+      "decision": "keep",
+      "score": 53,
+      "attempts": 1,
+      "measurements": {
+        "unit": {
+          "exit": 0,
+          "durationMs": 6946
+        },
+        "syntax": {
+          "exit": 0,
+          "durationMs": 55
+        },
+        "e2e": {
+          "exit": 0,
+          "durationMs": 8272,
+          "stats": {
+            "startTime": "2026-11-06T02:26:55.658Z",
+            "duration": 7892.487,
+            "expected": 4,
+            "skipped": 0,
+            "unexpected": 0,
+            "flaky": 0
+          }
+        }
+      },
+      "sourceHash": "8506ba653e9138f1c3423f2aeb18ca03115a11075128cbf9953b9d222831ff1c",
+      "criterionScores": [
+        3, 4, 3, 3, 3, 3, 4, 4, 2, 3, 4, 2, 1, 4, 3, 2, 2, 0, 2, 1
+      ]
+    },
+    {
+      "round": 10,
+      "observation": "New deferred-permission probe fails: cancel leaves cameraButton disabled; late completion can overwrite a newer pending request UI.",
+      "hypothesis": "Cancellation and completion must be owned by a request generation in both controller and UI.",
+      "change": "Centralize camera cancellation/reset, invalidate UI request tickets on mode/lifecycle cancellation, and ignore stale catch/finally callbacks.",
+      "assessment": "Consent/error criterion3\u21924 after deferred cancel/retry/late-completion, denial, owned cleanup, and page-cache flow pass. No real permission dialog or physical-camera capture used.",
+      "decision": "keep",
+      "score": 54,
+      "attempts": 1,
+      "measurements": {
+        "unit": {
+          "exit": 0,
+          "durationMs": 6958
+        },
+        "syntax": {
+          "exit": 0,
+          "durationMs": 54
+        },
+        "e2e": {
+          "exit": 0,
+          "durationMs": 5495,
+          "stats": {
+            "startTime": "2026-11-06T02:31:58.084Z",
+            "duration": 5116.474,
+            "expected": 5,
+            "skipped": 0,
+            "unexpected": 0,
+            "flaky": 0
+          }
+        }
+      },
+      "sourceHash": "fbd292445f75fccd0e5269d18fb4fe29a5ed6f72ffb1e1edb5c3834a0e592ec7",
+      "criterionScores": [
+        3, 4, 3, 3, 3, 3, 4, 4, 2, 4, 4, 2, 1, 4, 3, 2, 2, 0, 2, 1
+      ]
+    },
+    {
+      "round": 11,
+      "observation": "New ended-track browser probe fails: camera/video ending does not close tracking or restore manual controls.",
+      "hypothesis": "An ended video track must terminate its owning session and pause movement.",
+      "change": "Own generation-guarded video-track ended listeners, close the session with feedback, and remove listeners during stop.",
+      "assessment": "Media-lifecycle criterion2\u21923 after ended-track, stalled-worker and deliberate cleanup paths execute; late old-frame rejection remains pending.",
+      "decision": "keep",
+      "score": 55,
+      "attempts": 1,
+      "measurements": {
+        "unit": {
+          "exit": 0,
+          "durationMs": 6949
+        },
+        "syntax": {
+          "exit": 0,
+          "durationMs": 56
+        },
+        "e2e": {
+          "exit": 0,
+          "durationMs": 9155,
+          "stats": {
+            "startTime": "2026-11-06T02:33:21.907Z",
+            "duration": 8773.769,
+            "expected": 4,
+            "skipped": 0,
+            "unexpected": 0,
+            "flaky": 0
+          }
+        }
+      },
+      "sourceHash": "1b31693e46bb2e5c3c34e1d1394dc1dcf9be2edc1acc571f66dbd6f3a617d1fc",
+      "criterionScores": [
+        3, 4, 3, 3, 3, 3, 4, 4, 2, 4, 4, 3, 1, 4, 3, 2, 2, 0, 2, 1
+      ]
+    },
+    {
+      "round": 12,
+      "observation": "New delayed-capture probe fails: rejection from an old session pauses a newly calibrated/running camera session; old worker errors are also unowned.",
+      "hypothesis": "Every asynchronous callback may mutate only its owning camera generation.",
+      "change": "Guard initialization/runtime worker callbacks and bitmap rejection against obsolete generations; retain existing stale-success bitmap close.",
+      "assessment": "Media-lifecycle criterion3\u21924 after stale rejection/worker callbacks, cancellation, device-end and owned cleanup pass. No claim of actual-hand accuracy.",
+      "decision": "keep",
+      "score": 56,
+      "attempts": 1,
+      "measurements": {
+        "unit": {
+          "exit": 0,
+          "durationMs": 6994
+        },
+        "syntax": {
+          "exit": 0,
+          "durationMs": 56
+        },
+        "e2e": {
+          "exit": 0,
+          "durationMs": 8207,
+          "stats": {
+            "startTime": "2026-11-06T02:34:51.786Z",
+            "duration": 7824.516,
+            "expected": 5,
+            "skipped": 0,
+            "unexpected": 0,
+            "flaky": 0
+          }
+        }
+      },
+      "sourceHash": "35d58f0b568fbba0c535c69fb26f708d1fdcba05cdb72fd6942c79cc20421e25",
+      "criterionScores": [
+        3, 4, 3, 3, 3, 3, 4, 4, 2, 4, 4, 4, 1, 4, 3, 2, 2, 0, 2, 1
+      ]
+    },
+    {
+      "round": 13,
+      "observation": "Frozen runtime graphics-loss test fails while initial2D fallback exists; no owned scene/observer teardown is exposed.",
+      "hypothesis": "A stable scene adapter can dispose the lost3D view and preserve a usable2D simulation.",
+      "change": "Own scene/material/texture/target/observer cleanup, preserve engine-shared Sprite geometry, pause motion/camera, and switch controls/labels to2D on native context loss.",
+      "assessment": "Graphics criterion2\u21924 after simulated and nativeGLloss, resize/manual recovery, local visit and hidden fallback pass. No RAM/VRAM quantity claim.",
+      "decision": "keep",
+      "score": 58,
+      "attempts": 1,
+      "measurements": {
+        "unit": {
+          "exit": 0,
+          "durationMs": 7025
+        },
+        "syntax": {
+          "exit": 0,
+          "durationMs": 55
+        },
+        "e2e": {
+          "exit": 0,
+          "durationMs": 2545,
+          "stats": {
+            "startTime": "2026-11-06T02:37:28.761Z",
+            "duration": 2161.491,
+            "expected": 4,
+            "skipped": 0,
+            "unexpected": 0,
+            "flaky": 0
+          }
+        }
+      },
+      "sourceHash": "107ca4c01ca5e601e56f59760e2a452ec357118e2b5405d67980b65c7b42e858",
+      "criterionScores": [
+        3, 4, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 1, 4, 3, 2, 2, 0, 2, 1
+      ]
+    },
+    {
+      "round": 14,
+      "observation": "New cadence probes fail:10Hz movement covers one-third of60Hz displacement, and a model misses its declared duration.",
+      "hypothesis": "Advance physics in bounded fixed substeps for elapsed active time, drawing once per browser frame.",
+      "change": "Use up to200ms active elapsed time per frame, split into\u22641/60s steps; hidden time remains excluded.",
+      "assessment": "Model criterion3\u21924 after matching10Hz/60Hz paths and declared-time target completion, plus existing scenario/rewind checks. This is virtual-model timing, not real-car dynamics.",
+      "decision": "keep",
+      "score": 59,
+      "attempts": 1,
+      "measurements": {
+        "unit": {
+          "exit": 0,
+          "durationMs": 6978
+        },
+        "syntax": {
+          "exit": 0,
+          "durationMs": 56
+        },
+        "e2e": {
+          "exit": 0,
+          "durationMs": 5472,
+          "stats": {
+            "startTime": "2026-11-06T02:39:52.193Z",
+            "duration": 5092.668,
+            "expected": 4,
+            "skipped": 0,
+            "unexpected": 0,
+            "flaky": 0
+          }
+        }
+      },
+      "sourceHash": "8f9a24caac67dcd22ca11cb4aea183a3abdd5cfb8a601b6399eb8ea2a9440423",
+      "criterionScores": [
+        3, 4, 4, 3, 3, 3, 4, 4, 4, 4, 4, 4, 1, 4, 3, 2, 2, 0, 2, 1
+      ]
+    },
+    {
+      "round": 15,
+      "observation": "A real-app VM boundary probe records4001 frames despite the intended3200 bound; record() itself is unbounded.",
+      "hypothesis": "Bound recording at its single append boundary, preserving recent order and valid cursor/renderer invalidation.",
+      "change": "Keep at most3200 recent frames, increment a history revision for rendering, and let normal trip/boundary limits control movement independently of rolling-history capacity.",
+      "assessment": "Performance criterion2\u21923 after actual record4000 boundary/cursor/replay probe and existing full scenario tests; dynamic GPU-buffer allocation remains pending. First candidate passed all boundary assertions but the seeded test fixture had not refreshed UI before clicking replay. Seeder now calls the real renderUI; unchanged assertions rerun against baseline(4001frames fails) and candidate.",
+      "decision": "keep",
+      "score": 60,
+      "attempts": 2,
+      "measurements": {
+        "unit": {
+          "exit": 0,
+          "durationMs": 6926
+        },
+        "syntax": {
+          "exit": 0,
+          "durationMs": 53
+        },
+        "e2e": {
+          "exit": 0,
+          "durationMs": 5115,
+          "stats": {
+            "startTime": "2026-11-06T02:44:48.775Z",
+            "duration": 4737.366,
+            "expected": 3,
+            "skipped": 0,
+            "unexpected": 0,
+            "flaky": 0
+          }
+        }
+      },
+      "sourceHash": "bc78dbde3b7be6383c74b84e1fb099ae947e7af5116803e3c4147ca7c030b837",
+      "criterionScores": [
+        3, 4, 4, 3, 3, 3, 4, 4, 4, 4, 4, 4, 1, 4, 3, 3, 2, 0, 2, 1
+      ]
+    },
+    {
+      "round": 16,
+      "observation": "Native allocation probe created166 graphics buffers during a short move; stationary2D repainted17times in180ms. Position buffers were already reused, but computeLineDistances replaced attributes every render.",
+      "hypothesis": "Reuse bounded distance buffers and draw stationary2D only when its visible state changes.",
+      "change": "Allocate dynamic position/distance buffers once, update only active ranges, compute distances within drawn points, and cache2D state/size signatures without resizing unchanged backings.",
+      "assessment": "Performance criterion3\u21924 after native buffer-allocation bound, idle paint counter, change-triggered repaint and recovery paths pass. No physical-device power or memory amount claim.",
+      "decision": "keep",
+      "score": 61,
+      "attempts": 1,
+      "measurements": {
+        "unit": {
+          "exit": 0,
+          "durationMs": 6970
+        },
+        "syntax": {
+          "exit": 0,
+          "durationMs": 57
+        },
+        "e2e": {
+          "exit": 0,
+          "durationMs": 5065,
+          "stats": {
+            "startTime": "2026-11-06T02:48:18.397Z",
+            "duration": 4686.057000000001,
+            "expected": 5,
+            "skipped": 0,
+            "unexpected": 0,
+            "flaky": 0
+          }
+        }
+      },
+      "sourceHash": "5290908308d1f1896efc5b9efa7bcbe95dc4508df32e6e4f0fc89da200fcd179",
+      "criterionScores": [
+        3, 4, 4, 3, 3, 3, 4, 4, 4, 4, 4, 4, 1, 4, 3, 4, 2, 0, 2, 1
+      ]
+    },
+    {
+      "round": 17,
+      "observation": "Frozen target-size case fails on primary controls; mobile fixed-height layout shrinks essential buttons and reading text.",
+      "hypothesis": "Reachable44px controls and vertically scrollable compact layouts preserve practice without clipping learning/camera flows.",
+      "change": "Increase primary targets, provide a compact responsive header/control deck, and let mobile learning/camera content scroll with readable text.",
+      "assessment": "Touch criterion1\u21924 only after desktop/mobile size, reachability, real gesture and screenshot review. This selected desktop round is followed by explicit mobile validation.",
+      "decision": "keep",
+      "score": 64,
+      "attempts": 1,
+      "measurements": {
+        "unit": {
+          "exit": 0,
+          "durationMs": 6936
+        },
+        "syntax": {
+          "exit": 0,
+          "durationMs": 54
+        },
+        "e2e": {
+          "exit": 0,
+          "durationMs": 3235,
+          "stats": {
+            "startTime": "2026-11-06T02:51:43.240Z",
+            "duration": 2857.015,
+            "expected": 4,
+            "skipped": 0,
+            "unexpected": 0,
+            "flaky": 0
+          }
+        }
+      },
+      "sourceHash": "fa9a3aaa81c37212be3a8c3fe4a1676bad4b1b8f2bbb62dfd8423a46864e8d1a",
+      "criterionScores": [
+        3, 4, 4, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 3, 4, 2, 0, 2, 1
+      ]
+    },
+    {
+      "round": 18,
+      "observation": "Owned HTTP probes fail: no local-only content policy/nosniff, and diagnostic/directory routes are exposed. Vendor notice says SDK metrics may occur. First integrated candidate passes actualWASM but exposes a preexisting transient unsteady status: next frame overwrites the warning. Corrected sustained calibration-readiness classification; no assertions/timeouts relaxed.",
+      "hypothesis": "A local content policy and explicit public serving boundaries can preserve real model operation without external successful transfers.",
+      "change": "Restrict connect/script/worker/media origins, retainWASM evaluation and correct MIME, disable directory/diagnostic serving, and verify actual local blank-frame inference. Keep unsteady readiness feedback until the sample window is actually steady.",
+      "assessment": "Server2\u21924 andlocal-dependency3\u21924 if actualHTTP plus realWASM/model execution pass under policy. Blank frame verifies runtime only, not human-hand accuracy.",
+      "decision": "keep",
+      "score": 67,
+      "attempts": 2,
+      "measurements": {
+        "unit": {
+          "exit": 0,
+          "durationMs": 6939
+        },
+        "syntax": {
+          "exit": 0,
+          "durationMs": 56
+        },
+        "e2e": {
+          "exit": 0,
+          "durationMs": 4580,
+          "stats": {
+            "startTime": "2026-11-06T03:00:41.694Z",
+            "duration": 4204.1939999999995,
+            "expected": 5,
+            "skipped": 0,
+            "unexpected": 0,
+            "flaky": 0
+          }
+        }
+      },
+      "sourceHash": "e21e0e75a6ac6a515818edd1ef3ad75ae98c0fdeb98b08d45f3ba165052acc16",
+      "criterionScores": [
+        3, 4, 4, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 2, 1
+      ]
+    },
+    {
+      "round": 19,
+      "observation": "No executable asset-integrity or fresh-install check exists. Upstream tarballSHA512/file bytes and official model download were independently compared successfully.",
+      "hypothesis": "A checked asset manifest and clean tracked-source install make the public runtime reproducible and detect corruption.",
+      "change": "Add byte/hash manifests, actual corruption detection, pinned Node/tooling metadata, and a clean install/assets/unit-process verifier with owned scratch cleanup.",
+      "assessment": "Install2\u21924 after current and clean-source checks pass; upstream authenticity links/hashes retained, no user/private artifacts copied.",
+      "decision": "keep",
+      "score": 69,
+      "attempts": 1,
+      "measurements": {
+        "unit": {
+          "exit": 0,
+          "durationMs": 6968
+        },
+        "syntax": {
+          "exit": 0,
+          "durationMs": 53
+        },
+        "e2e": {
+          "exit": 0,
+          "durationMs": 2785,
+          "stats": {
+            "startTime": "2026-11-06T03:04:08.465Z",
+            "duration": 2402.47,
+            "expected": 3,
+            "skipped": 0,
+            "unexpected": 0,
+            "flaky": 0
+          }
+        },
+        "probe": {
+          "exit": 0,
+          "durationMs": 7453
+        }
+      },
+      "sourceHash": "a9b14a66de20f96653902c0b2bd4d2b1c6f5c8357333da39d9e9ca5c63996304",
+      "criterionScores": [
+        3, 4, 4, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 4, 1
+      ]
+    },
+    {
+      "round": 20,
+      "observation": "Public source lacks a complete guide, own license, attribution/CI and final cross-engine/real-time route evidence. All3 real-time parking routes and Chromium/touch UI pass; WebKit fails focus restoration after help closes. Added explicit return-to-invoker focus.",
+      "hypothesis": "An executable public release with honest documentation and final independent browser scenarios makes the work reviewable and reusable.",
+      "change": "Document actual behavior/limits, license and attribute assets, format authored code, configure pinned CI, and execute full desktop/mobile plus Chromium/touch/WebKit and all three real-time model routes.",
+      "assessment": "Publication0\u21924 andE2E1\u21924 after local final checks pass; remote CI must pass after publication. Scores are implementation-agent judgments, not human learning or driving validation. Recheck all3 UI engines after focus-only correction; retain passing3 real-time route executions from attempt1. Full6case suite remains mandatory in publicCI.",
+      "decision": "keep",
+      "score": 76,
+      "attempts": 2,
+      "measurements": {
+        "unit": {
+          "exit": 0,
+          "durationMs": 6946
+        },
+        "syntax": {
+          "exit": 0,
+          "durationMs": 56
+        },
+        "e2e": {
+          "exit": 0,
+          "durationMs": 7858,
+          "stats": {
+            "startTime": "2026-11-06T03:14:44.089Z",
+            "duration": 7477.973,
+            "expected": 6,
+            "skipped": 0,
+            "unexpected": 0,
+            "flaky": 0
+          }
+        },
+        "probe": {
+          "exit": 0,
+          "durationMs": 4917
+        }
+      },
+      "sourceHash": "919473aea3b1d03b397a409efea6cf6ad4744ae7fe75d7f470c66a475ae51ee6",
+      "criterionScores": [
+        3, 4, 4, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4
+      ]
+    }
+  ],
+  "limitations": "Implementation-agent rubric judgments. Synthetic video/landmarks and real blank-frame inference; no human-hand, real-phone learning or real-car validation.",
+  "finalScore": 76,
+  "finalVerification": {
+    "uniqueUnitChecks": 46,
+    "developmentBrowser": {
+      "startTime": "2026-11-06T03:15:21.958Z",
+      "duration": 48476.257,
+      "expected": 48,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "productionUI": {
+      "startTime": "2026-11-06T03:14:51.896Z",
+      "duration": 4590.373,
+      "expected": 3,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "realTimeRoutes": {
+      "passed": 3,
+      "cases": 3,
+      "evidence": "Round20 attempt1; focus-only correction followed, all3UIengines retested. Full6-case suite remains in CI."
+    },
+    "physicalCamera": "not used",
+    "physicalDevices": "not tested"
+  }
+}

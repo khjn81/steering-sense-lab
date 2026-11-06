@@ -1,105 +1,175 @@
-import { test, expect } from '@playwright/test';
-import { installCameraFixture } from './helpers/camera.mjs';
+import { test, expect } from "@playwright/test";
+import { installCameraFixture } from "./helpers/camera.mjs";
 async function enterCamera(page, options) {
   await installCameraFixture(page, options);
-  await page.goto('/'); await expect(page.locator('#sceneLoading')).toBeHidden();
-  await page.locator('#scenarioSelect').selectOption('free');
-  await page.locator('#cameraButton').click();
-  await expect(page.locator('#calibrateButton')).toBeEnabled();
+  await page.goto("/");
+  await expect(page.locator("#sceneLoading")).toBeHidden();
+  await page.locator("#scenarioSelect").selectOption("free");
+  await page.locator("#cameraButton").click();
+  await expect(page.locator("#calibrateButton")).toBeEnabled();
 }
 
-test('unstable synthetic hands cannot produce a false calibration success message', async ({ page }) => {
+test("unstable synthetic hands cannot produce a false calibration success message", async ({
+  page,
+}) => {
   await enterCamera(page, { unstable: true });
-  await page.locator('#calibrateButton').click();
-  await expect(page.locator('#cameraStatus')).toHaveText('잠깐 가만히 있어요');
-  expect(await page.locator('#runStatus').textContent()).not.toContain('맞췄어요');
-  await expect(page.locator('#reverseGear')).toBeDisabled();
+  await page.locator("#calibrateButton").click();
+  await expect(page.locator("#cameraStatus")).toHaveText("잠깐 가만히 있어요");
+  expect(await page.locator("#runStatus").textContent()).not.toContain(
+    "맞췄어요",
+  );
+  await expect(page.locator("#reverseGear")).toBeDisabled();
 });
 
-test('stable synthetic hands calibrate and stopping releases the owned video and worker', async ({ page }) => {
+test("stable synthetic hands calibrate and stopping releases the owned video and worker", async ({
+  page,
+}) => {
   await enterCamera(page);
-  await page.locator('#calibrateButton').click();
-  await expect(page.locator('#cameraStatus')).toHaveText('손으로 조작 중');
-  await page.locator('#reverseGear').click();
-  await expect(page.locator('#driveButtonText')).toHaveText('멈추기');
-  await page.locator('#stopCamera').click();
-  await expect(page.locator('#steerRange')).toBeEnabled();
-  expect(await page.locator('#handVideo').evaluate(v => v.srcObject)).toBeNull();
+  await page.locator("#calibrateButton").click();
+  await expect(page.locator("#cameraStatus")).toHaveText("손으로 조작 중");
+  await page.locator("#reverseGear").click();
+  await expect(page.locator("#driveButtonText")).toHaveText("멈추기");
+  await page.locator("#stopCamera").click();
+  await expect(page.locator("#steerRange")).toBeEnabled();
+  expect(
+    await page.locator("#handVideo").evaluate((v) => v.srcObject),
+  ).toBeNull();
   const resources = await page.evaluate(() => window.__cameraFixture);
-  expect(resources.stoppedTracks).toBeGreaterThan(0); expect(resources.stoppedWorkers).toBeGreaterThan(0);
+  expect(resources.stoppedTracks).toBeGreaterThan(0);
+  expect(resources.stoppedWorkers).toBeGreaterThan(0);
 });
 
-test('future synthetic observations stop movement and recovery requires a new start', async ({ page }) => {
-  await enterCamera(page); await page.locator('#calibrateButton').click();
-  await page.locator('#reverseGear').click();
-  await page.evaluate(() => { window.__timestampOffset = 10000; });
-  await expect(page.locator('#cameraStatus')).toHaveText('잠깐 멈췄어요');
-  expect(await page.locator('#driveButtonText').textContent()).not.toBe('멈추기');
-  await page.evaluate(() => { window.__timestampOffset = 0; });
-  await expect(page.locator('#cameraStatus')).toHaveText('손으로 조작 중');
-  expect(await page.locator('#driveButtonText').textContent()).not.toBe('멈추기');
+test("future synthetic observations stop movement and recovery requires a new start", async ({
+  page,
+}) => {
+  await enterCamera(page);
+  await page.locator("#calibrateButton").click();
+  await page.locator("#reverseGear").click();
+  await page.evaluate(() => {
+    window.__timestampOffset = 10000;
+  });
+  await expect(page.locator("#cameraStatus")).toHaveText("잠깐 멈췄어요");
+  expect(await page.locator("#driveButtonText").textContent()).not.toBe(
+    "멈추기",
+  );
+  await page.evaluate(() => {
+    window.__timestampOffset = 0;
+  });
+  await expect(page.locator("#cameraStatus")).toHaveText("손으로 조작 중");
+  expect(await page.locator("#driveButtonText").textContent()).not.toBe(
+    "멈추기",
+  );
 });
 
-test('a stalled synthetic worker releases camera resources and allows a fresh retry', async ({ page }) => {
-  await enterCamera(page); await page.locator('#calibrateButton').click();
-  await page.locator('#reverseGear').click();
-  await page.evaluate(() => { window.__stallHandWorker = true; });
-  await expect(page.locator('#cameraError')).toContainText('응답');
-  await expect(page.locator('#steerRange')).toBeEnabled();
-  expect((await page.evaluate(() => window.__cameraFixture)).stoppedTracks).toBeGreaterThan(0);
-  await page.evaluate(() => { window.__stallHandWorker = false; });
-  await page.locator('#cameraButton').click();
-  await expect(page.locator('#calibrateButton')).toBeEnabled();
+test("a stalled synthetic worker releases camera resources and allows a fresh retry", async ({
+  page,
+}) => {
+  await enterCamera(page);
+  await page.locator("#calibrateButton").click();
+  await page.locator("#reverseGear").click();
+  await page.evaluate(() => {
+    window.__stallHandWorker = true;
+  });
+  await expect(page.locator("#cameraError")).toContainText("응답");
+  await expect(page.locator("#steerRange")).toBeEnabled();
+  expect(
+    (await page.evaluate(() => window.__cameraFixture)).stoppedTracks,
+  ).toBeGreaterThan(0);
+  await page.evaluate(() => {
+    window.__stallHandWorker = false;
+  });
+  await page.locator("#cameraButton").click();
+  await expect(page.locator("#calibrateButton")).toBeEnabled();
 });
 
-test('cancelling a pending camera request permits retry and ignores its late completion', async ({ page }) => {
+test("cancelling a pending camera request permits retry and ignores its late completion", async ({
+  page,
+}) => {
   await installCameraFixture(page, { deferPermission: true });
-  await page.goto('/'); await expect(page.locator('#sceneLoading')).toBeHidden();
-  await page.locator('#cameraButton').click(); await page.locator('#stopCamera').click();
-  await expect(page.locator('#cameraButton')).toBeEnabled();
-  await page.locator('#cameraButton').click();
-  await page.evaluate(async () => { window.__cameraFixture.pending.shift()(); await Promise.resolve(); await Promise.resolve(); await new Promise(requestAnimationFrame); });
-  await expect(page.locator('#reverseGear')).toBeDisabled();
-  await expect(page.locator('#cameraButton')).toBeDisabled();
+  await page.goto("/");
+  await expect(page.locator("#sceneLoading")).toBeHidden();
+  await page.locator("#cameraButton").click();
+  await page.locator("#stopCamera").click();
+  await expect(page.locator("#cameraButton")).toBeEnabled();
+  await page.locator("#cameraButton").click();
+  await page.evaluate(async () => {
+    window.__cameraFixture.pending.shift()();
+    await Promise.resolve();
+    await Promise.resolve();
+    await new Promise(requestAnimationFrame);
+  });
+  await expect(page.locator("#reverseGear")).toBeDisabled();
+  await expect(page.locator("#cameraButton")).toBeDisabled();
   await page.evaluate(() => window.__cameraFixture.pending.shift()());
-  await expect(page.locator('#calibrateButton')).toBeEnabled();
-  await page.locator('#stopCamera').click();
-  await expect(page.locator('#steerRange')).toBeEnabled();
+  await expect(page.locator("#calibrateButton")).toBeEnabled();
+  await page.locator("#stopCamera").click();
+  await expect(page.locator("#steerRange")).toBeEnabled();
 });
 
-test('an ended video track pauses movement and restores manual control', async ({ page }) => {
-  await enterCamera(page); await page.locator('#calibrateButton').click();
-  await page.locator('#reverseGear').click();
-  await page.evaluate(() => window.__currentFixtureStream.getVideoTracks()[0].dispatchEvent(new Event('ended')));
-  await expect(page.locator('#cameraError')).toContainText('영상');
-  await expect(page.locator('#steerRange')).toBeEnabled();
-  expect(await page.locator('#driveButtonText').textContent()).not.toBe('멈추기');
-  expect((await page.evaluate(() => window.__cameraFixture)).stoppedWorkers).toBeGreaterThan(0);
+test("an ended video track pauses movement and restores manual control", async ({
+  page,
+}) => {
+  await enterCamera(page);
+  await page.locator("#calibrateButton").click();
+  await page.locator("#reverseGear").click();
+  await page.evaluate(() =>
+    window.__currentFixtureStream
+      .getVideoTracks()[0]
+      .dispatchEvent(new Event("ended")),
+  );
+  await expect(page.locator("#cameraError")).toContainText("영상");
+  await expect(page.locator("#steerRange")).toBeEnabled();
+  expect(await page.locator("#driveButtonText").textContent()).not.toBe(
+    "멈추기",
+  );
+  expect(
+    (await page.evaluate(() => window.__cameraFixture)).stoppedWorkers,
+  ).toBeGreaterThan(0);
 });
 
-test('late frame failures and callbacks from an old camera cannot stop a new session', async ({ page }) => {
+test("late frame failures and callbacks from an old camera cannot stop a new session", async ({
+  page,
+}) => {
   await installCameraFixture(page);
   await page.addInitScript(() => {
     const native = window.createImageBitmap.bind(window);
     window.createImageBitmap = (...args) => {
       if (window.__holdNextBitmap) {
         window.__holdNextBitmap = false;
-        return new Promise((resolve,reject) => { window.__rejectOldBitmap = () => reject(new Error('Old capture failure')); });
+        return new Promise((resolve, reject) => {
+          window.__rejectOldBitmap = () =>
+            reject(new Error("Old capture failure"));
+        });
       }
       return native(...args);
     };
   });
-  await page.goto('/'); await expect(page.locator('#sceneLoading')).toBeHidden();
-  await page.locator('#scenarioSelect').selectOption('free');
-  await page.locator('#cameraButton').click(); await expect(page.locator('#calibrateButton')).toBeEnabled();
-  await page.evaluate(() => { window.__oldFixtureWorker = window.__currentFixtureWorker; window.__holdNextBitmap = true; });
-  await expect.poll(() => page.evaluate(() => Boolean(window.__rejectOldBitmap))).toBe(true);
-  await page.locator('#stopCamera').click();
-  await page.locator('#cameraButton').click(); await expect(page.locator('#calibrateButton')).toBeEnabled();
-  await page.locator('#calibrateButton').click(); await page.locator('#reverseGear').click();
-  await page.evaluate(async () => { window.__rejectOldBitmap(); await Promise.resolve(); await Promise.resolve(); });
-  expect(await page.locator('#driveButtonText').textContent()).toBe('멈추기');
-  await page.evaluate(() => window.__oldFixtureWorker.onerror?.(new Event('error')));
-  await expect(page.locator('#cameraStatus')).toHaveText('손으로 조작 중');
-  expect(await page.locator('#driveButtonText').textContent()).toBe('멈추기');
+  await page.goto("/");
+  await expect(page.locator("#sceneLoading")).toBeHidden();
+  await page.locator("#scenarioSelect").selectOption("free");
+  await page.locator("#cameraButton").click();
+  await expect(page.locator("#calibrateButton")).toBeEnabled();
+  await page.evaluate(() => {
+    window.__oldFixtureWorker = window.__currentFixtureWorker;
+    window.__holdNextBitmap = true;
+  });
+  await expect
+    .poll(() => page.evaluate(() => Boolean(window.__rejectOldBitmap)))
+    .toBe(true);
+  await page.locator("#stopCamera").click();
+  await page.locator("#cameraButton").click();
+  await expect(page.locator("#calibrateButton")).toBeEnabled();
+  await page.locator("#calibrateButton").click();
+  await page.locator("#reverseGear").click();
+  await page.evaluate(async () => {
+    window.__rejectOldBitmap();
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+  expect(await page.locator("#driveButtonText").textContent()).toBe("멈추기");
+  await page.evaluate(() =>
+    window.__oldFixtureWorker.onerror?.(new Event("error")),
+  );
+  await expect(page.locator("#cameraStatus")).toHaveText("손으로 조작 중");
+  expect(await page.locator("#driveButtonText").textContent()).toBe("멈추기");
 });

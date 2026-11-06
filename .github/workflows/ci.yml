@@ -1,0 +1,42 @@
+name: Verify Steering Sense
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [desktop, mobile, production]
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run format:check
+      - run: npm run assets:check
+      - run: npm test
+      - if: matrix.suite != 'production'
+        run: npx playwright install --with-deps chromium
+      - if: matrix.suite == 'production'
+        run: npx playwright install --with-deps chromium webkit
+      - if: matrix.suite != 'production'
+        run: npx playwright test --project=${{ matrix.suite }} --reporter=list,json
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: test-results/e2e.json
+      - if: matrix.suite == 'production'
+        run: npm run test:release
+      - uses: actions/upload-artifact@v7.0.2
+        if: always()
+        with:
+          name: browser-evidence-${{ matrix.suite }}
+          path: |
+            test-results/
+            test-results-release/
+          retention-days: 7

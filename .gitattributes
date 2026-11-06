@@ -1,0 +1,4 @@
+dist/vendor/** linguist-vendored=true
+dist/models/** linguist-vendored=true
+*.wasm binary
+*.task binary

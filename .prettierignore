@@ -1,0 +1,10 @@
+node_modules
+.improvement-runs
+dist/vendor
+dist/models
+test-results
+test-results-release
+playwright-report
+playwright.config.mjs
+e2e/journey.spec.mjs
+e2e/resilience.spec.mjs

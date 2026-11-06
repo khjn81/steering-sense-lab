@@ -6,7 +6,12 @@
     "test": "node --test tests/*.test.mjs",
     "start": "python3 serve.py",
     "assets:check": "node scripts/assets-check.mjs",
-    "check:clean": "node scripts/clean-install.mjs"
+    "check:clean": "node scripts/clean-install.mjs",
+    "test:e2e": "playwright test",
+    "test:release": "playwright test --config release.config.mjs",
+    "verify": "npm run assets:check && npm test && npm run test:e2e && npm run test:release",
+    "format": "prettier --write \"dist/*.mjs\" \"dist/*.js\" dist/styles.css dist/index.html scripts tests e2e release-checks \"*.json\" \"*.mjs\" quality .github \"*.md\" \"docs/*.md\"",
+    "format:check": "prettier --check \"dist/*.mjs\" \"dist/*.js\" dist/styles.css dist/index.html scripts tests e2e release-checks \"*.json\" \"*.mjs\" quality .github \"*.md\" \"docs/*.md\""
   },
   "devDependencies": {
     "@playwright/test": "1.62.1",
@@ -15,5 +20,6 @@
   "version": "0.1.0",
   "engines": {
     "node": ">=22.13.0"
-  }
+  },
+  "license": "MIT"
 }
