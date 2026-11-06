@@ -398,6 +398,7 @@ function advance(dt) {
   }
 }
 function animate(now) {
+  if (document.hidden) { state.lastFrame = now; requestAnimationFrame(animate); return; }
   const dt = state.lastFrame ? Math.min((now - state.lastFrame) / 1000, .05) : 0; state.lastFrame = now;
   advance(dt); scene?.render(state); requestAnimationFrame(animate);
 }
