@@ -1,0 +1,12 @@
+.DS_Store
+__pycache__/
+.artifacts/
+*.log
+
+node_modules/
+.improvement-runs/
+test-results/
+test-results-release/
+playwright-report/
+.env
+.env.*

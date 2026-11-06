@@ -1,0 +1,35 @@
+[
+  {
+    "name": "three",
+    "version": "0.186.1",
+    "source": "https://registry.npmjs.org/three/-/three-0.186.1.tgz",
+    "integrity": "sha512-blFeqb49wRCSGUGj7gtpfnSGHy2lwDk94RhUmS1c/hTby70kvChbWpkJ4Pm1390LqzzvTmzgXKHPEafJwCb8jA==",
+    "files": [
+      "dist/vendor/three/LICENSE",
+      "dist/vendor/three/three.core.js",
+      "dist/vendor/three/three.module.js"
+    ]
+  },
+  {
+    "name": "@mediapipe/tasks-vision",
+    "version": "1.1.1",
+    "source": "https://registry.npmjs.org/@mediapipe/tasks-vision/-/tasks-vision-1.1.1.tgz",
+    "integrity": "sha512-jwntgT5tzDrKOkqg6xNDNpRcTUnGvmylZE5DFnzPXossiWOIDdZX+C81LI75hlXhsG58YZW+lGzcmjH1qrQE/Q==",
+    "files": [
+      "dist/vendor/mediapipe/wasm/vision_wasm_internal.js",
+      "dist/vendor/mediapipe/wasm/vision_wasm_module_internal.js",
+      "dist/vendor/mediapipe/wasm/vision_wasm_nosimd_internal.js",
+      "dist/vendor/mediapipe/README.md",
+      "dist/vendor/mediapipe/vision_bundle.mjs",
+      "dist/vendor/mediapipe/wasm/vision_wasm_internal.wasm",
+      "dist/vendor/mediapipe/wasm/vision_wasm_module_internal.wasm",
+      "dist/vendor/mediapipe/wasm/vision_wasm_nosimd_internal.wasm"
+    ]
+  },
+  {
+    "name": "MediaPipe Hand Landmarker float16 v1",
+    "source": "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+    "sha256": "fbc2a30080c3c557093b5ddfc334698132eb341044ccee322ccf8bcf3607cde1",
+    "bytes": 7819105
+  }
+]

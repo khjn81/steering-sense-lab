@@ -1,0 +1,13 @@
+{
+  "name": "steering-sense-lab",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "start": "python3 serve.py"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.1",
+    "prettier": "3.6.2"
+  }
+}

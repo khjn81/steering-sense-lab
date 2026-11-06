@@ -1,0 +1,114 @@
+{
+  "version": "rubric-v1",
+  "scale": {
+    "0": "absent or failing",
+    "1": "implementation clues",
+    "2": "partial with known important failure",
+    "3": "representative path executed",
+    "4": "edge cases and recovery executed",
+    "5": "bounded repeated reproduction and public evidence"
+  },
+  "criteria": [
+    {
+      "id": "manual",
+      "requirement": "Drive, steer, stop and return to practice",
+      "max": 5
+    },
+    {
+      "id": "native-keys",
+      "requirement": "Native form keys never unexpectedly drive",
+      "max": 5
+    },
+    {
+      "id": "models",
+      "requirement": "Scenario model routes reach intended targets",
+      "max": 5
+    },
+    {
+      "id": "quiz",
+      "requirement": "Prediction precedes movement and review",
+      "max": 5
+    },
+    {
+      "id": "history",
+      "requirement": "Scrub/replay restores world and pauses inspection",
+      "max": 5
+    },
+    {
+      "id": "ownership",
+      "requirement": "Concurrent pointer and driving inputs have explicit ownership",
+      "max": 5
+    },
+    {
+      "id": "visibility",
+      "requirement": "Hidden scenes pause simulation and drawing",
+      "max": 5
+    },
+    {
+      "id": "dialog",
+      "requirement": "Modal guidance isolates driving input and restores focus",
+      "max": 5
+    },
+    {
+      "id": "graphics",
+      "requirement": "Initial and runtime graphics failure keep a usable fallback",
+      "max": 5
+    },
+    {
+      "id": "consent",
+      "requirement": "Camera consent/denial leaves manual mode usable",
+      "max": 5
+    },
+    {
+      "id": "tracking",
+      "requirement": "Invalid or stale hand observations never drive",
+      "max": 5
+    },
+    {
+      "id": "media-life",
+      "requirement": "Camera/worker/frame resources close and recover",
+      "max": 5
+    },
+    {
+      "id": "touch",
+      "requirement": "Primary controls are reachable with44px targets",
+      "max": 5
+    },
+    {
+      "id": "stop-key",
+      "requirement": "An immediate keyboard stop is available",
+      "max": 5
+    },
+    {
+      "id": "local",
+      "requirement": "Main visit and model assets use local dependencies",
+      "max": 5
+    },
+    {
+      "id": "performance",
+      "requirement": "History/dynamic buffers and idle rendering are bounded",
+      "max": 5
+    },
+    {
+      "id": "server",
+      "requirement": "Portable loopback server, MIME and public boundaries",
+      "max": 5
+    },
+    {
+      "id": "publication",
+      "requirement": "Public guide, screenshots, own license and third-party attribution",
+      "max": 5
+    },
+    {
+      "id": "install",
+      "requirement": "Reproducible fresh lockfile install and checks",
+      "max": 5
+    },
+    {
+      "id": "e2e",
+      "requirement": "Repeatable core, recovery and final browser journeys",
+      "max": 5
+    }
+  ],
+  "limitations": "Implementation-agent judgments, not independent human ratings, physical-device learning studies, or actual driving validation."
+}
