@@ -306,7 +306,7 @@ for (const event of ['pointerup', 'pointercancel', 'lostpointercapture']) $('whe
 });
 document.addEventListener('keydown', e => {
   if ($('aboutDialog').open) return;
-  const editing = e.target.isContentEditable || ['TEXTAREA', 'SELECT'].includes(e.target.tagName) || (e.target.tagName === 'INPUT' && e.target.type !== 'range');
+  const editing = e.target.isContentEditable || ['TEXTAREA', 'SELECT', 'INPUT', 'SUMMARY'].includes(e.target.tagName);
   if (e.ctrlKey || e.metaKey || e.altKey || editing) return;
   if (state.mode === 'free' && ['ArrowUp', 'KeyW', 'ArrowDown', 'KeyS'].includes(e.code)) {
     e.preventDefault(); if (!e.repeat) requestDirection(['ArrowUp', 'KeyW'].includes(e.code) ? 1 : -1, e.code); return;
