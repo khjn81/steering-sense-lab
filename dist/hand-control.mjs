@@ -30,19 +30,21 @@ export class HandController {
         const timer = setTimeout(() => reject(new Error('손 인식 준비가 오래 걸리고 있어요. 직접 조작으로 먼저 연습하고 다시 시도해주세요.')), 45000);
         this.pendingInit = { reject, timer };
         this.worker.onmessage = ({ data }) => {
+          if (generation !== this.generation) return;
           if (data.type === 'ready') { clearTimeout(timer); this.pendingInit = null; resolve(); }
           if (data.type === 'error') { clearTimeout(timer); reject(new Error(data.message)); }
         };
-        this.worker.onerror = () => { clearTimeout(timer); reject(new Error('손 인식을 실행하지 못했어요. Chrome에서 다시 시도해주세요.')); };
+        this.worker.onerror = () => { if (generation !== this.generation) return; clearTimeout(timer); reject(new Error('손 인식을 실행하지 못했어요. Chrome에서 다시 시도해주세요.')); };
         this.worker.postMessage({ type: 'init' });
       });
       if (generation !== this.generation) return;
       this.worker.onmessage = ({ data }) => {
+        if (generation !== this.generation) return;
         this.busy = false;
         if (data.type === 'error') { this.stop(); this.onChange('error', '손 인식이 멈췄어요. 카메라를 다시 켜거나 직접 조작해주세요.'); return; }
         if (data.type === 'hands') this.process(data.landmarks, data.timestamp);
       };
-      this.worker.onerror = () => { this.stop(); this.onChange('error', '손 인식이 멈췄어요. 카메라를 다시 켜거나 직접 조작해주세요.'); };
+      this.worker.onerror = () => { if (generation !== this.generation) return; this.stop(); this.onChange('error', '손 인식이 멈췄어요. 카메라를 다시 켜거나 직접 조작해주세요.'); };
       this.onChange('tracking'); this.lastTick = 0; this.lastVideoTime = -1;
       this.tick(generation);
     } catch (error) {
@@ -82,7 +84,7 @@ export class HandController {
       createImageBitmap(this.video).then(bitmap => {
         if (generation !== this.generation || !this.worker) { bitmap.close(); return; }
         this.worker.postMessage({ type: 'frame', bitmap, timestamp: now }, [bitmap]);
-      }).catch(() => { this.busy = false; this.onLost(); });
+      }).catch(() => { if (generation !== this.generation) return; this.busy = false; this.onLost(); });
     }
     if (this.calibrated && !this.ready) { this.onLost(); this.onChange('lost'); }
     this.raf = requestAnimationFrame(() => this.tick(generation));

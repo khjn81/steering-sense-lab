@@ -76,3 +76,30 @@ test('an ended video track pauses movement and restores manual control', async (
   expect(await page.locator('#driveButtonText').textContent()).not.toBe('멈추기');
   expect((await page.evaluate(() => window.__cameraFixture)).stoppedWorkers).toBeGreaterThan(0);
 });
+
+test('late frame failures and callbacks from an old camera cannot stop a new session', async ({ page }) => {
+  await installCameraFixture(page);
+  await page.addInitScript(() => {
+    const native = window.createImageBitmap.bind(window);
+    window.createImageBitmap = (...args) => {
+      if (window.__holdNextBitmap) {
+        window.__holdNextBitmap = false;
+        return new Promise((resolve,reject) => { window.__rejectOldBitmap = () => reject(new Error('Old capture failure')); });
+      }
+      return native(...args);
+    };
+  });
+  await page.goto('/'); await expect(page.locator('#sceneLoading')).toBeHidden();
+  await page.locator('#scenarioSelect').selectOption('free');
+  await page.locator('#cameraButton').click(); await expect(page.locator('#calibrateButton')).toBeEnabled();
+  await page.evaluate(() => { window.__oldFixtureWorker = window.__currentFixtureWorker; window.__holdNextBitmap = true; });
+  await expect.poll(() => page.evaluate(() => Boolean(window.__rejectOldBitmap))).toBe(true);
+  await page.locator('#stopCamera').click();
+  await page.locator('#cameraButton').click(); await expect(page.locator('#calibrateButton')).toBeEnabled();
+  await page.locator('#calibrateButton').click(); await page.locator('#reverseGear').click();
+  await page.evaluate(async () => { window.__rejectOldBitmap(); await Promise.resolve(); await Promise.resolve(); });
+  expect(await page.locator('#driveButtonText').textContent()).toBe('멈추기');
+  await page.evaluate(() => window.__oldFixtureWorker.onerror?.(new Event('error')));
+  await expect(page.locator('#cameraStatus')).toHaveText('손으로 조작 중');
+  expect(await page.locator('#driveButtonText').textContent()).toBe('멈추기');
+});
