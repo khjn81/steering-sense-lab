@@ -15,6 +15,13 @@ export class HandController {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }, audio: false });
       if (generation !== this.generation) { stream.getTracks().forEach(t => t.stop()); return; }
       this.stream = stream; this.video.srcObject = stream;
+      const ended = () => {
+        if (generation !== this.generation) return;
+        this.stop(); this.onChange('error', '카메라 영상이 종료됐어요. 직접 조작하거나 카메라를 다시 켜주세요.');
+      };
+      const tracks = stream.getVideoTracks();
+      for (const track of tracks) track.addEventListener('ended', ended, { once: true });
+      this.removeTrackListeners = () => { for (const track of tracks) track.removeEventListener('ended', ended); };
       await this.video.play();
       if (generation !== this.generation) return;
       this.active = true; this.onChange('loading');
@@ -49,6 +56,7 @@ export class HandController {
   }
   stop() {
     this.generation++; cancelAnimationFrame(this.raf);
+    this.removeTrackListeners?.(); this.removeTrackListeners = null;
     if (this.pendingInit) { clearTimeout(this.pendingInit.timer); this.pendingInit.reject(new Error('Camera stopped')); this.pendingInit = null; }
     this.stream?.getTracks().forEach(t => t.stop()); this.stream = null;
     this.video.pause(); this.video.srcObject = null;

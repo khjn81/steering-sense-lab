@@ -66,3 +66,13 @@ test('cancelling a pending camera request permits retry and ignores its late com
   await page.locator('#stopCamera').click();
   await expect(page.locator('#steerRange')).toBeEnabled();
 });
+
+test('an ended video track pauses movement and restores manual control', async ({ page }) => {
+  await enterCamera(page); await page.locator('#calibrateButton').click();
+  await page.locator('#reverseGear').click();
+  await page.evaluate(() => window.__currentFixtureStream.getVideoTracks()[0].dispatchEvent(new Event('ended')));
+  await expect(page.locator('#cameraError')).toContainText('영상');
+  await expect(page.locator('#steerRange')).toBeEnabled();
+  expect(await page.locator('#driveButtonText').textContent()).not.toBe('멈추기');
+  expect((await page.evaluate(() => window.__cameraFixture)).stoppedWorkers).toBeGreaterThan(0);
+});
