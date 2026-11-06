@@ -66,10 +66,14 @@ export class HandController {
     this.active = false; this.calibrated = false; this.lastSeen = null; this.measurement = null; this.busy = false; this.samples = []; this.previousTimestamp = 0;
     this.onLost(); this.onChange('off');
   }
+  calibrationIsSteady() {
+    if (this.samples.length < 8) return false;
+    const angles = this.samples.slice(-12); return Math.max(...angles) - Math.min(...angles) <= 9;
+  }
   calibrate() {
     if (!this.measurement || this.samples.length < 8 || performance.now() - this.lastSeen > 200) return false;
     const angles = this.samples.slice(-12);
-    if (Math.max(...angles) - Math.min(...angles) > 9) { this.onChange('unsteady'); return false; }
+    if (!this.calibrationIsSteady()) { this.onChange('unsteady'); return false; }
     this.neutral = angles.reduce((a, b) => a + b, 0) / angles.length;
     this.angle = 0; this.calibrated = true; this.onAngle(0); this.onChange('calibrated'); return true;
   }
@@ -104,7 +108,7 @@ export class HandController {
     if (this.calibrated) {
       this.angle = handSteering(this.measurement.angle, this.neutral, this.angle, this.previousTimestamp ? (timestamp - this.previousTimestamp) / 1000 : .05);
       this.onAngle(this.angle); this.onChange('calibrated');
-    } else this.onChange(this.samples.length >= 8 ? 'can-calibrate' : 'tracking');
+    } else this.onChange(this.samples.length >= 8 ? this.calibrationIsSteady() ? 'can-calibrate' : 'unsteady' : 'tracking');
     this.previousTimestamp = timestamp;
   }
   drawHands(hands) {
