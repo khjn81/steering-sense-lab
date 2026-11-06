@@ -7,7 +7,7 @@ const $ = id => document.getElementById(id);
 const text = (id, value) => { if ($(id).textContent !== value) $(id).textContent = value; };
 const state = {
   pose: { x: 0, y: 1, heading: 0 }, handAngle: 0, gear: -1,
-  running: false, replaying: false, history: [], historyIndex: 0,
+  running: false, replaying: false, history: [], historyIndex: 0, historyVersion: 0,
   showPaths: true, showWheels: false, mode: 'free', lessonIndex: 0, phase: 'question',
   choice: null, time: 0, runDistance: 0, lastFrame: 0, pendingDriveUntil: 0,
   scenarioId: 'apt-bay', showMirrors: true, showRear: true, travelled: 0,
@@ -22,7 +22,7 @@ const camera = new HandController({
 });
 
 function frame() { return { pose: { ...state.pose }, handAngle: state.handAngle, gear: state.gear, time: state.time, travelled: state.travelled, hazardTime: state.hazardTime, contact: state.contact, complete: state.complete, modelStep: state.modelStep, modelElapsed: state.modelElapsed }; }
-function record() { state.history.push(frame()); state.historyIndex = state.history.length - 1; }
+function record() { state.history.push(frame()); if (state.history.length > 3200) state.history.splice(0, state.history.length - 3200); state.historyIndex = state.history.length - 1; state.historyVersion++; }
 function reset(heading = null, keepAngle = true) {
   state.running = false; state.replaying = false; state.modelView = false; state.modelPlaying = false; state.modelFinished = false; state.modelStep = 0; state.modelElapsed = 0;
   state.pendingDriveUntil = 0; activeDriveKey = null;
@@ -30,7 +30,7 @@ function reset(heading = null, keepAngle = true) {
   state.time = 0; state.runDistance = 0; state.travelled = 0; state.hazardTime = -1; state.contact = false; state.complete = false; state.inspecting = false;
   if (!keepAngle) state.handAngle = 0;
   if (state.mode === 'free') state.gear = getScenario(state.scenarioId).gear;
-  state.history = [frame()]; state.historyIndex = 0;
+  state.history = [frame()]; state.historyIndex = 0; state.historyVersion++;
   text('runStatus', 'R / D를 누르면 바로 움직여요'); renderLesson(); renderUI();
 }
 function pause(message) {
@@ -390,7 +390,7 @@ function advance(dt) {
     if (camera.active && !camera.ready) { pause('양손이 안 보여서 멈췄어요. 손을 다시 맞춘 뒤 출발해주세요.'); return; }
     const step = Math.min(dt, 1 / 30), scenario = getScenario(state.scenarioId);
     if (!advanceWorld(step, true)) return;
-    if (state.runDistance >= (state.mode === 'quiz' ? 1.6 : scenario.maxTrip || 5) || !withinBounds(state.pose, scenario) || state.history.length >= 3200) {
+    if (state.runDistance >= (state.mode === 'quiz' ? 1.6 : scenario.maxTrip || 5) || !withinBounds(state.pose, scenario)) {
       state.running = false; activeDriveKey = null;
       if (state.mode === 'quiz') { state.phase = 'review'; state.showPaths = true; $('showPaths').checked = true; renderLesson(); }
       text('runStatus', state.mode === 'quiz' ? '이동 기록을 되감아 다시 볼 수 있어요' : '조금 움직였어요. 멈춰서 앞뒤 경로를 살펴보세요');

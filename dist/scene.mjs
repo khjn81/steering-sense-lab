@@ -315,7 +315,7 @@ function threeScene(container, T, onContextLoss) {
   function render(state) {
     if (disposed) return;
     lastState = state;
-    const signature = [state.pose.x, state.pose.y, state.pose.heading, state.handAngle, state.gear, state.history.length, state.historyIndex, state.showPaths, state.showWheels, state.scenarioId, state.hazardTime, state.modelStep, state.modelView, state.nearObstacleId, state.showMirrors, state.showRear, state.attention, mainViewport.clientHeight].join('|');
+    const signature = [state.pose.x, state.pose.y, state.pose.heading, state.handAngle, state.gear, state.history.length, state.historyVersion, state.historyIndex, state.showPaths, state.showWheels, state.scenarioId, state.hazardTime, state.modelStep, state.modelView, state.nearObstacleId, state.showMirrors, state.showRear, state.attention, mainViewport.clientHeight].join('|');
     if (lastSignature === signature) return;
     lastSignature = signature;
     if (builtScenario !== state.scenarioId) buildWorld(state.scenarioId);

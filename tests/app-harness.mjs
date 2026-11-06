@@ -49,7 +49,7 @@ export async function appHarness(initialScenario = 'free') {
     performance: { now: () => now }
   };
   const source = (await readFile(new URL('../dist/app.mjs', import.meta.url), 'utf8')).replace(/^import .*;\n/gm, '');
-  vm.runInNewContext(source, context, { filename: 'app.mjs' });
+  vm.createContext(context); vm.runInContext(source, context, { filename: 'app.mjs' });
   await Promise.resolve();
   function tick(count = 1, stepMs = 1000 / 60) { for (let i = 0; i < count; i++) { now += stepMs; nextFrame(now); } }
   tick();
@@ -58,6 +58,7 @@ export async function appHarness(initialScenario = 'free') {
     el: id => document.getElementById(id), document, window,
     async click(id) { await Promise.all(document.getElementById(id).emit('click')); },
     tick,
+    recordFrames(count) { const append = vm.runInContext('() => { state.time += 1; record(); }', context); for (let i=0;i<count;i++) append(); vm.runInContext('renderUI()', context); tick(); },
     get output() { return rendered; }, get hands() { return device; }
   };
 }
