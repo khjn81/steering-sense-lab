@@ -1,17 +1,37 @@
 import { frontWheelAngles, projectedPath, vehiclePoint, WHEELBASE } from './simulation.mjs';
 import { getScenario, obstaclesFor, rectangleCorners } from './scenarios.mjs?v=4';
 
-export async function createScene(container) {
+export async function createScene(container, onFallback = () => {}) {
+  let current, disposed = false;
   try {
     const THREE = await import('./vendor/three/three.module.js');
-    return threeScene(container, THREE);
+    current = threeScene(container, THREE, () => {
+      if (disposed) return;
+      current.dispose(); current = flatScene(container); onFallback();
+    });
   } catch (error) {
     console.warn('3D view unavailable; using the top view.', error);
-    return flatScene(container);
+    current = flatScene(container);
   }
+  return { get kind() { return current.kind; }, render(state) { if (!disposed) current.render(state); }, setView(view) { if (!disposed) current.setView(view); }, dispose() { if (disposed) return; disposed = true; current.dispose(); } };
 }
 
-function threeScene(container, T) {
+function disposeObjects(root) {
+  const geometries = new Set(), materials = new Set(), textures = new Set();
+  root.traverse(object => {
+    if (object.geometry && !object.isSprite) geometries.add(object.geometry);
+    for (const material of Array.isArray(object.material) ? object.material : [object.material]) {
+      if (!material) continue; materials.add(material);
+      for (const value of Object.values(material)) if (value?.isTexture && !value.isRenderTargetTexture) textures.add(value);
+    }
+  });
+  for (const geometry of geometries) geometry.dispose();
+  for (const texture of textures) texture.dispose();
+  for (const material of materials) material.dispose();
+}
+
+function threeScene(container, T, onContextLoss) {
+  let disposed = false;
   const scene = new T.Scene();
   scene.background = new T.Color('#e8eee5');
   const renderer = new T.WebGLRenderer({ antialias: true, alpha: false });
@@ -167,7 +187,7 @@ function threeScene(container, T) {
   let builtScenario = null;
   const obstacleObjects = new Map();
   function buildWorld(id) {
-    world.traverse(o => { o.geometry?.dispose(); if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => { m.map?.dispose(); m.dispose(); }); });
+    disposeObjects(world);
     world.clear(); obstacleObjects.clear();
     const s = getScenario(id), garage = s.environment === 'garage';
     outdoor.visible = !garage;
@@ -293,6 +313,7 @@ function threeScene(container, T) {
     label.style.visibility = Math.abs(v.x) < .9 && Math.abs(v.y) < .88 ? 'visible' : 'hidden';
   }
   function render(state) {
+    if (disposed) return;
     lastState = state;
     const signature = [state.pose.x, state.pose.y, state.pose.heading, state.handAngle, state.gear, state.history.length, state.historyIndex, state.showPaths, state.showWheels, state.scenarioId, state.hazardTime, state.modelStep, state.modelView, state.nearObstacleId, state.showMirrors, state.showRear, state.attention, mainViewport.clientHeight].join('|');
     if (lastSignature === signature) return;
@@ -324,8 +345,13 @@ function threeScene(container, T) {
     attention.position.set(focusPoint.x, .05, -focusPoint.y);
     renderViews(state); placeLabel(frontLabel, front, -17); placeLabel(rearLabel, rear, 20);
   }
-  new ResizeObserver(resize).observe(container); resize();
-  return { render, kind: '3d', setView(value) { view = value; setCamera(); lastSignature = null; if (lastState) render(lastState); } };
+  const observer = new ResizeObserver(resize); observer.observe(container); resize();
+  const lost = event => { event.preventDefault(); onContextLoss(); };
+  renderer.domElement.addEventListener('webglcontextlost', lost, { once: true });
+  return { render, kind: '3d', setView(value) { if (disposed) return; view = value; setCamera(); lastSignature = null; if (lastState) render(lastState); }, dispose() {
+    if (disposed) return; disposed = true; observer.disconnect(); renderer.domElement.removeEventListener('webglcontextlost', lost);
+    disposeObjects(scene); disposeObjects(blitScene); targets.forEach(target => target.dispose()); renderer.dispose(); renderer.domElement.remove();
+  } };
 }
 
 function flatScene(container) {
@@ -362,6 +388,6 @@ function flatScene(container) {
       path([{ x: center.x - .3 * Math.sin(a), y: center.y - .3 * Math.cos(a) }, { x: center.x + .3 * Math.sin(a), y: center.y + .3 * Math.cos(a) }], '#283c30');
     }
   }
-  new ResizeObserver(() => latest && render(latest)).observe(container);
-  return { render, kind: '2d', setView() {} };
+  const observer = new ResizeObserver(() => latest && render(latest)); observer.observe(container);
+  return { render, kind: '2d', setView() {}, dispose() { observer.disconnect(); canvas.remove(); } };
 }

@@ -347,7 +347,7 @@ $('calibrateButton').addEventListener('click', () => {
 $('stopCamera').addEventListener('click', () => { pause(); cancelCameraInput(); text('runStatus', '마우스나 터치로 이어서 조작할 수 있어요'); renderUI(); });
 window.addEventListener('blur', () => { if (state.running || state.replaying || state.modelPlaying || state.pendingDriveUntil) pause('화면을 벗어나서 잠깐 멈췄어요'); });
 document.addEventListener('visibilitychange', () => { if (document.hidden) { pause('화면을 벗어나서 잠깐 멈췄어요'); if (camera.active || cameraBusy) cancelCameraInput(); } });
-window.addEventListener('pagehide', () => { pause('페이지를 떠나서 잠깐 멈췄어요. 돌아오면 직접 다시 출발해주세요.'); cancelCameraInput(); });
+window.addEventListener('pagehide', event => { pause('페이지를 떠나서 잠깐 멈췄어요. 돌아오면 직접 다시 출발해주세요.'); cancelCameraInput(); if (!event.persisted) scene?.dispose?.(); });
 
 function advanceWorld(dt, drive) {
   const s = getScenario(state.scenarioId), next = drive ? stepPose(state.pose, state.handAngle, state.gear, dt) : state.pose;
@@ -412,12 +412,15 @@ function animate(now) {
   const dt = state.lastFrame ? Math.min((now - state.lastFrame) / 1000, .05) : 0; state.lastFrame = now;
   advance(dt); scene?.render(state); requestAnimationFrame(animate);
 }
+function useFlatView(lost = false) {
+  state.showMirrors = state.showRear = false; $('showMirrors').checked = $('showRear').checked = false; $('showMirrors').disabled = $('showRear').disabled = true;
+  text('runStatus', lost ? '3D 화면이 멈춰 2D로 바꿨어요. 직접 다시 출발할 수 있어요.' : '2D 화면에서는 가상 미러를 지원하지 않아요');
+  for (const id of ['view3d','viewFollow']) { $(id).disabled = true; $(id).classList.remove('active'); $(id).setAttribute('aria-pressed','false'); }
+  $('viewTop').classList.add('active'); $('viewTop').setAttribute('aria-pressed','true'); $('scene').setAttribute('aria-label','자동차와 장애물의 위에서 본 2D 연습장'); renderUI();
+}
 reset(); renderLesson();
-createScene($('scene')).then(value => {
+createScene($('scene'), () => { pause(); if (camera.active || cameraBusy) cancelCameraInput(); useFlatView(true); }).then(value => {
   scene = value; $('sceneLoading').hidden = true;
-  if (scene.kind === '2d') {
-    state.showMirrors = state.showRear = false; $('showMirrors').checked = $('showRear').checked = false; $('showMirrors').disabled = $('showRear').disabled = true;
-    text('runStatus', '2D 화면에서는 가상 미러를 지원하지 않아요'); $('view3d').disabled = true; $('viewFollow').disabled = true; $('viewTop').classList.add('active'); $('view3d').classList.remove('active'); $('view3d').setAttribute('aria-pressed', 'false'); $('viewTop').setAttribute('aria-pressed', 'true'); renderUI();
-  }
+  if (scene.kind === '2d') useFlatView();
   requestAnimationFrame(animate);
 }).catch(error => { text('sceneLoading', '화면을 준비하지 못했어요. 새로고침해서 다시 시도해주세요.'); console.error(error); });
