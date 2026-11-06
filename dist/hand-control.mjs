@@ -79,7 +79,7 @@ export class HandController {
   process(landmarks, timestamp) {
     const now = performance.now();
     this.measurement = measureHands(landmarks, this.video.videoWidth, this.video.videoHeight);
-    this.drawHands(landmarks);
+    this.drawHands(this.measurement ? landmarks : []);
     if (!this.measurement || now - timestamp > 300) {
       this.samples = [];
       if (!this.ready) { this.onLost(); this.onChange(this.calibrated ? 'lost' : 'tracking'); }

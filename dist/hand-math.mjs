@@ -3,14 +3,15 @@ export const HAND_GAIN = MAX_HAND_ANGLE / 70;
 export const TRACKING_TIMEOUT = 300;
 
 export function palmCenter(hand) {
-  if (!hand || hand.length < 18) return null;
+  if (!Array.isArray(hand) || hand.length !== 21 || hand.some(p => !p || !Number.isFinite(p.x) || !Number.isFinite(p.y) || p.x < 0 || p.x > 1 || p.y < 0 || p.y > 1)) return null;
+  if (Array.from({length:21}, (_,i)=>hand[i]).some(p=>!p)) return null;
   const points = [0, 5, 9, 13, 17].map(i => hand[i]);
   if (points.some(p => !Number.isFinite(p.x) || !Number.isFinite(p.y))) return null;
   return { x: points.reduce((sum, p) => sum + 1 - p.x, 0) / 5, y: points.reduce((sum, p) => sum + p.y, 0) / 5 };
 }
 
 export function measureHands(landmarks, width, height) {
-  if (landmarks?.length !== 2 || width <= 0 || height <= 0) return null;
+  if (!Array.isArray(landmarks) || landmarks.length !== 2 || !Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return null;
   const hands = landmarks.map(palmCenter);
   if (hands.some(p => !p)) return null;
   hands.sort((a, b) => a.x - b.x);
