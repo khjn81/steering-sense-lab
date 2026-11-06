@@ -337,7 +337,7 @@ $('calibrateButton').addEventListener('click', () => { pause('가운데 자세�
 $('stopCamera').addEventListener('click', () => { pause(); camera.stop(); cameraBusy = false; text('runStatus', '마우스나 터치로 이어서 조작할 수 있어요'); renderUI(); });
 window.addEventListener('blur', () => { if (state.running || state.replaying || state.modelPlaying || state.pendingDriveUntil) pause('화면을 벗어나서 잠깐 멈췄어요'); });
 document.addEventListener('visibilitychange', () => { if (document.hidden) { pause('화면을 벗어나서 잠깐 멈췄어요'); if (camera.active || cameraBusy) { camera.stop(); cameraBusy = false; } } });
-window.addEventListener('pagehide', () => camera.stop());
+window.addEventListener('pagehide', () => { pause('페이지를 떠나서 잠깐 멈췄어요. 돌아오면 직접 다시 출발해주세요.'); camera.stop(); cameraBusy = false; renderUI(); });
 
 function advanceWorld(dt, drive) {
   const s = getScenario(state.scenarioId), next = drive ? stepPose(state.pose, state.handAngle, state.gear, dt) : state.pose;
