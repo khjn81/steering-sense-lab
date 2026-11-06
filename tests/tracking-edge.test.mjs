@@ -24,3 +24,22 @@ test('invalid model callbacks clear the overlay instead of throwing while drawin
     assert.equal(c.measurement,null);assert.equal(c.samples.length,0);
   } finally { if(previous===undefined)delete globalThis.document;else globalThis.document=previous; }
 });
+
+test('freshness rejects future, nonfinite and negative observation times', async () => {
+  const {trackingIsFresh}=await import('../dist/hand-math.mjs');
+  for(const [seen,now] of [[1000,200],[Infinity,200],[-10,0],[NaN,200],[100,NaN]]) assert.equal(trackingIsFresh(seen,now,true),false);
+  assert.equal(trackingIsFresh(0,300,true),true);assert.equal(trackingIsFresh(0,301,true),false);
+});
+
+test('future and reordered worker observations cannot refresh calibrated driving', () => {
+  const previous=globalThis.document;
+  const context=Object.fromEntries(['clearRect','beginPath','lineTo','moveTo','stroke','arc','fill'].map(name=>[name,()=>{}]));
+  globalThis.document={getElementById:id=>id==='handVideo'?{videoWidth:640,videoHeight:480}:{getContext:()=>context}};
+  try {
+    const c=new HandController({onAngle(){},onChange(){},onLost(){}});
+    c.active=c.calibrated=true;const now=performance.now();c.previousTimestamp=now-20;c.lastSeen=now;
+    c.process([hand(.7),hand(.3)],now+10000);assert.equal(c.ready,false);assert.equal(c.lastSeen,null);
+    c.lastSeen=performance.now();c.previousTimestamp=performance.now();
+    c.process([hand(.7),hand(.3)],c.previousTimestamp-1);assert.equal(c.ready,false);
+  } finally { if(previous===undefined)delete globalThis.document;else globalThis.document=previous; }
+});

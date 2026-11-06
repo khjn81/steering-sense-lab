@@ -28,3 +28,14 @@ test('stable synthetic hands calibrate and stopping releases the owned video and
   const resources = await page.evaluate(() => window.__cameraFixture);
   expect(resources.stoppedTracks).toBeGreaterThan(0); expect(resources.stoppedWorkers).toBeGreaterThan(0);
 });
+
+test('future synthetic observations stop movement and recovery requires a new start', async ({ page }) => {
+  await enterCamera(page); await page.locator('#calibrateButton').click();
+  await page.locator('#reverseGear').click();
+  await page.evaluate(() => { window.__timestampOffset = 10000; });
+  await expect(page.locator('#cameraStatus')).toHaveText('잠깐 멈췄어요');
+  expect(await page.locator('#driveButtonText').textContent()).not.toBe('멈추기');
+  await page.evaluate(() => { window.__timestampOffset = 0; });
+  await expect(page.locator('#cameraStatus')).toHaveText('손으로 조작 중');
+  expect(await page.locator('#driveButtonText').textContent()).not.toBe('멈추기');
+});

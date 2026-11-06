@@ -78,14 +78,16 @@ export class HandController {
   }
   process(landmarks, timestamp) {
     const now = performance.now();
-    this.measurement = measureHands(landmarks, this.video.videoWidth, this.video.videoHeight);
+    const invalidTimestamp = !Number.isFinite(timestamp) || timestamp < 0 || timestamp > now || now - timestamp > 300 || (Number.isFinite(this.previousTimestamp) && timestamp <= this.previousTimestamp);
+    this.measurement = invalidTimestamp ? null : measureHands(landmarks, this.video.videoWidth, this.video.videoHeight);
     this.drawHands(this.measurement ? landmarks : []);
-    if (!this.measurement || now - timestamp > 300) {
+    if (!this.measurement) {
       this.samples = [];
+      if (invalidTimestamp) this.lastSeen = null;
       if (!this.ready) { this.onLost(); this.onChange(this.calibrated ? 'lost' : 'tracking'); }
       return;
     }
-    this.lastSeen = now; this.samples.push(this.measurement.angle); this.samples = this.samples.slice(-16);
+    this.lastSeen = timestamp; this.samples.push(this.measurement.angle); this.samples = this.samples.slice(-16);
     if (this.calibrated) {
       this.angle = handSteering(this.measurement.angle, this.neutral, this.angle, this.previousTimestamp ? (timestamp - this.previousTimestamp) / 1000 : .05);
       this.onAngle(this.angle); this.onChange('calibrated');

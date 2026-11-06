@@ -29,5 +29,5 @@ export function handSteering(measurement, neutral, previous = 0, dt = 0.05) {
 }
 
 export function trackingIsFresh(lastSeen, now, calibrated) {
-  return calibrated && lastSeen !== null && now - lastSeen <= TRACKING_TIMEOUT;
+  return calibrated === true && Number.isFinite(lastSeen) && Number.isFinite(now) && lastSeen >= 0 && now >= lastSeen && now - lastSeen <= TRACKING_TIMEOUT;
 }
