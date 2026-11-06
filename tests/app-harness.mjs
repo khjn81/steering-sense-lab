@@ -51,7 +51,7 @@ export async function appHarness(initialScenario = 'free') {
   const source = (await readFile(new URL('../dist/app.mjs', import.meta.url), 'utf8')).replace(/^import .*;\n/gm, '');
   vm.runInNewContext(source, context, { filename: 'app.mjs' });
   await Promise.resolve();
-  function tick(count = 1) { for (let i = 0; i < count; i++) { now += 1000 / 60; nextFrame(now); } }
+  function tick(count = 1, stepMs = 1000 / 60) { for (let i = 0; i < count; i++) { now += stepMs; nextFrame(now); } }
   tick();
   if (initialScenario) { elements.get('scenarioSelect').value = initialScenario; elements.get('scenarioSelect').emit('change'); tick(); }
   return {

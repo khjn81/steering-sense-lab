@@ -409,8 +409,10 @@ function advance(dt) {
 }
 function animate(now) {
   if (document.hidden) { state.lastFrame = now; requestAnimationFrame(animate); return; }
-  const dt = state.lastFrame ? Math.min((now - state.lastFrame) / 1000, .05) : 0; state.lastFrame = now;
-  advance(dt); scene?.render(state); requestAnimationFrame(animate);
+  const dt = state.lastFrame ? Math.max(0, Math.min((now - state.lastFrame) / 1000, .2)) : 0; state.lastFrame = now;
+  let remaining = dt;
+  while (remaining > 1e-8) { const step = Math.min(remaining, 1 / 60); advance(step); remaining -= step; }
+  scene?.render(state); requestAnimationFrame(animate);
 }
 function useFlatView(lost = false) {
   state.showMirrors = state.showRear = false; $('showMirrors').checked = $('showRear').checked = false; $('showMirrors').disabled = $('showRear').disabled = true;
