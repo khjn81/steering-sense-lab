@@ -11,7 +11,7 @@ const folder = `${root}/rounds/${String(spec.round).padStart(3,'0')}`;
 fs.mkdirSync(folder, {recursive: true});
 let attempt = 1; while (fs.existsSync(`${folder}/evaluation-${attempt}.json`)) attempt++;
 const files=[];
-for (const base of ['dist','tests','e2e','scripts','serve.py','package.json','package-lock.json','README.md','.github']) {
+for (const base of ['dist','tests','e2e','scripts','serve.py','package.json','package-lock.json','README.md','.github','quality']) {
   function visit(file) { if(!fs.existsSync(file))return; if(fs.statSync(file).isDirectory())for(const name of fs.readdirSync(file).sort())visit(path.join(file,name));else files.push([file,hash(fs.readFileSync(file))]); }
   visit(base);
 }
