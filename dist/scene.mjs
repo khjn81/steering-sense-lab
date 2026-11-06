@@ -121,7 +121,8 @@ function threeScene(container, T, onContextLoss) {
   const frontMarker = marker('#d97c61'), rearMarker = marker('#258c80');
   function line(color, dashed) {
     const geometry = new T.BufferGeometry();
-    geometry.setAttribute('position', new T.BufferAttribute(new Float32Array(4096 * 3), 3)); geometry.setDrawRange(0, 0);
+    geometry.setAttribute('position', new T.BufferAttribute(new Float32Array(4096 * 3), 3).setUsage(T.DynamicDrawUsage)); geometry.setDrawRange(0, 0);
+    if (dashed) geometry.setAttribute('lineDistance', new T.BufferAttribute(new Float32Array(4096), 1).setUsage(T.DynamicDrawUsage));
     const m = dashed ? new T.LineDashedMaterial({ color, dashSize: .16, gapSize: .13, transparent: true, opacity: .65 }) : new T.LineBasicMaterial({ color, transparent: true, opacity: .9 });
     const object = new T.Line(geometry, m); object.frustumCulled = false; scene.add(object); return object;
   }
@@ -129,9 +130,16 @@ function threeScene(container, T, onContextLoss) {
   function fill(object, points) {
     const buffer = object.geometry.attributes.position;
     const n = Math.min(points.length, 4096);
-    for (let i = 0; i < n; i++) buffer.setXYZ(i, points[i].x, .03, -points[i].y);
-    buffer.needsUpdate = true; object.geometry.setDrawRange(0, n);
-    if (object.material.isLineDashedMaterial) object.computeLineDistances();
+    const distances = object.geometry.attributes.lineDistance; let total = 0;
+    for (let i = 0; i < n; i++) {
+      buffer.setXYZ(i, points[i].x, .03, -points[i].y);
+      if (distances) { if (i) total += Math.hypot(points[i].x - points[i-1].x, points[i].y - points[i-1].y); distances.setX(i, total); }
+    }
+    object.geometry.setDrawRange(0, n);
+    if (n) {
+      buffer.clearUpdateRanges(); buffer.addUpdateRange(0, n * 3); buffer.needsUpdate = true;
+      if (distances) { distances.clearUpdateRanges(); distances.addUpdateRange(0, n); distances.needsUpdate = true; }
+    }
   }
   const chassisMaterials = car.children.filter(child => child.isMesh).map(child => child.material);
   const world = new T.Group(); scene.add(world);
@@ -282,6 +290,7 @@ function threeScene(container, T, onContextLoss) {
   }
   let view = '3d', lastState = null, lastSignature = null, previousXray = false;
   function resize() {
+    if (disposed) return;
     const width = container.clientWidth, height = container.clientHeight;
     renderer.setSize(width, height, false);
     setCamera(); lastSignature = null; if (lastState) render(lastState);
@@ -357,13 +366,18 @@ function threeScene(container, T, onContextLoss) {
 function flatScene(container) {
   const old = container.querySelector('canvas'); if (old) old.remove();
   const canvas = document.createElement('canvas'); container.prepend(canvas);
-  const ctx = canvas.getContext('2d'); let latest;
+  const ctx = canvas.getContext('2d'); let latest, lastSignature = null, disposed = false;
   const project = p => { const f = getScenario(latest?.scenarioId).focus, scale = Math.min(canvas.clientHeight / f.height, canvas.clientWidth / f.width); return { x: canvas.clientWidth / 2 + (p.x - f.x) * scale, y: canvas.clientHeight / 2 - (p.y - f.y) * scale }; };
   function render(state) {
+    if (disposed) return;
     latest = state;
     const w = container.clientWidth, h = container.clientHeight, ratio = Math.min(devicePixelRatio || 1, 2);
+    const signature = [state.pose.x,state.pose.y,state.pose.heading,state.handAngle,state.gear,state.historyVersion,state.historyIndex,state.showPaths,state.showWheels,state.scenarioId,state.hazardTime,state.nearObstacleId,w,h,ratio].join('|');
+    if (lastSignature === signature) return; lastSignature = signature;
     const s = getScenario(state.scenarioId);
-    canvas.width = w * ratio; canvas.height = h * ratio; ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    if (canvas.width !== Math.round(w * ratio)) canvas.width = Math.round(w * ratio);
+    if (canvas.height !== Math.round(h * ratio)) canvas.height = Math.round(h * ratio);
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
     ctx.fillStyle = s.garage ? '#a8b1ad' : '#e8eee5'; ctx.fillRect(0, 0, w, h);
     ctx.strokeStyle = '#d3dece'; ctx.lineWidth = 1;
     if (!s.garage) for (let i = -20; i <= 20; i++) { ctx.beginPath(); let a = project({ x: i, y: -20 }), b = project({ x: i, y: 20 }); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); a = project({ x: -20, y: i }); b = project({ x: 20, y: i }); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); }
@@ -389,5 +403,5 @@ function flatScene(container) {
     }
   }
   const observer = new ResizeObserver(() => latest && render(latest)); observer.observe(container);
-  return { render, kind: '2d', setView() {}, dispose() { observer.disconnect(); canvas.remove(); } };
+  return { render, kind: '2d', setView() {}, dispose() { disposed = true; observer.disconnect(); canvas.remove(); } };
 }
