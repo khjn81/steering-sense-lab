@@ -306,6 +306,9 @@ for (const event of ['pointerup', 'pointercancel', 'lostpointercapture']) $('whe
 });
 document.addEventListener('keydown', e => {
   if ($('aboutDialog').open) return;
+  if (e.code === 'Escape' && (state.running || state.replaying || state.modelPlaying || state.pendingDriveUntil)) {
+    e.preventDefault(); userStop('Escape로 멈췄어요. 준비되면 다시 출발해주세요.'); return;
+  }
   const editing = e.target.isContentEditable || ['TEXTAREA', 'SELECT', 'INPUT', 'SUMMARY'].includes(e.target.tagName);
   if (e.ctrlKey || e.metaKey || e.altKey || editing) return;
   if (state.mode === 'free' && ['ArrowUp', 'KeyW', 'ArrowDown', 'KeyS'].includes(e.code)) {
