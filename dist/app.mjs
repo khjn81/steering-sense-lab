@@ -14,7 +14,7 @@ const state = {
   modelView: false, modelPlaying: false, modelFinished: false, modelStep: 0, modelElapsed: 0,
   hazardTime: -1, contact: false, complete: false, attention: 'all', nearObstacleId: null, inspecting: false
 };
-let scene, steeringPointer = null, lastDrag = 0, cameraBusy = false, cameraState = 'off', activeDriveKey = null, lastCoachKey = '';
+let scene, steeringPointer = null, lastDrag = 0, cameraBusy = false, cameraState = 'off', activeDriveKey = null, lastCoachKey = '', cameraRequest = 0;
 const camera = new HandController({
   onAngle(angle) { if (state.mode === 'free' && !state.replaying && !state.modelView) setSteering(angle, true); },
   onLost() { if (state.running && !state.modelView) pause('양손이 안 보여서 멈췄어요. 다시 손을 맞춘 뒤 출발해주세요.'); },
@@ -88,7 +88,7 @@ function startMoving() {
   else beginMovement();
 }
 function goFree() {
-  if (camera.active || cameraBusy) { camera.stop(); cameraBusy = false; }
+  if (camera.active || cameraBusy) cancelCameraInput();
   state.mode = 'free'; state.phase = 'question'; state.handAngle = 0; state.gear = -1;
   state.scenarioId = state.previousScenarioId || state.scenarioId;
   reset(0); renderLesson();
@@ -109,7 +109,7 @@ function startModel() {
   text('runStatus', '모범 동작 · 멈추기 버튼으로 잠깐 멈출 수 있어요'); renderLesson(); renderUI();
 }
 function goQuiz(index = 0) {
-  if (camera.active || cameraBusy) { camera.stop(); cameraBusy = false; }
+  if (camera.active || cameraBusy) cancelCameraInput();
   if (state.mode === 'free') state.previousScenarioId = state.scenarioId;
   state.scenarioId = 'free';
   state.mode = 'quiz'; state.lessonIndex = index; state.phase = 'question'; state.choice = null;
@@ -322,25 +322,32 @@ document.addEventListener('keyup', e => {
   if (activeDriveKey !== e.code) return;
   e.preventDefault(); userStop('전후진 키에서 손을 떼어 멈췄어요');
 });
+function cancelCameraInput() {
+  cameraRequest++; cameraBusy = false; camera.stop();
+  $('cameraButton').disabled = false;
+  $('cameraButton').querySelector('span').textContent = '카메라 켜고 손으로 조작';
+  updateCamera('off'); renderUI();
+}
 $('cameraButton').addEventListener('click', async () => {
   if (cameraBusy || camera.active) return;
   if (state.mode !== 'free') goFree();
   if (state.modelView) reset(null, false);
+  const request = ++cameraRequest;
   pause('카메라를 준비하고 있어요'); cameraBusy = true; $('cameraError').hidden = true;
   $('cameraButton').disabled = true; $('cameraButton').querySelector('span').textContent = '카메라 준비 중…';
   $('stopCamera').hidden = false; renderUI();
   try { await camera.start(); }
-  catch (error) { $('cameraError').hidden = false; text('cameraError', error.message || '카메라를 켜지 못했어요. 직접 조작으로 연습해주세요.'); }
-  finally { cameraBusy = false; $('cameraButton').disabled = false; $('cameraButton').querySelector('span').textContent = '카메라 켜고 손으로 조작'; updateCamera(camera.active ? cameraState : 'off'); renderUI(); }
+  catch (error) { if (request === cameraRequest) { $('cameraError').hidden = false; text('cameraError', error.message || '카메라를 켜지 못했어요. 직접 조작으로 연습해주세요.'); } }
+  finally { if (request === cameraRequest) { cameraBusy = false; $('cameraButton').disabled = false; $('cameraButton').querySelector('span').textContent = '카메라 켜고 손으로 조작'; updateCamera(camera.active ? cameraState : 'off'); renderUI(); } }
 });
 $('calibrateButton').addEventListener('click', () => {
   pause('가운데 자세를 확인하고 있어요.');
   text('runStatus', camera.calibrate() ? '가운데 자세를 맞췄어요. 출발 버튼을 눌러주세요.' : '아직 가운데 자세를 맞추지 못했어요. 양손을 잠깐 고정하고 다시 눌러주세요.');
 });
-$('stopCamera').addEventListener('click', () => { pause(); camera.stop(); cameraBusy = false; text('runStatus', '마우스나 터치로 이어서 조작할 수 있어요'); renderUI(); });
+$('stopCamera').addEventListener('click', () => { pause(); cancelCameraInput(); text('runStatus', '마우스나 터치로 이어서 조작할 수 있어요'); renderUI(); });
 window.addEventListener('blur', () => { if (state.running || state.replaying || state.modelPlaying || state.pendingDriveUntil) pause('화면을 벗어나서 잠깐 멈췄어요'); });
-document.addEventListener('visibilitychange', () => { if (document.hidden) { pause('화면을 벗어나서 잠깐 멈췄어요'); if (camera.active || cameraBusy) { camera.stop(); cameraBusy = false; } } });
-window.addEventListener('pagehide', () => { pause('페이지를 떠나서 잠깐 멈췄어요. 돌아오면 직접 다시 출발해주세요.'); camera.stop(); cameraBusy = false; renderUI(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) { pause('화면을 벗어나서 잠깐 멈췄어요'); if (camera.active || cameraBusy) cancelCameraInput(); } });
+window.addEventListener('pagehide', () => { pause('페이지를 떠나서 잠깐 멈췄어요. 돌아오면 직접 다시 출발해주세요.'); cancelCameraInput(); });
 
 function advanceWorld(dt, drive) {
   const s = getScenario(state.scenarioId), next = drive ? stepPose(state.pose, state.handAngle, state.gear, dt) : state.pose;

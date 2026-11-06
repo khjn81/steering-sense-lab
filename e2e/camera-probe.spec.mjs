@@ -51,3 +51,18 @@ test('a stalled synthetic worker releases camera resources and allows a fresh re
   await page.locator('#cameraButton').click();
   await expect(page.locator('#calibrateButton')).toBeEnabled();
 });
+
+test('cancelling a pending camera request permits retry and ignores its late completion', async ({ page }) => {
+  await installCameraFixture(page, { deferPermission: true });
+  await page.goto('/'); await expect(page.locator('#sceneLoading')).toBeHidden();
+  await page.locator('#cameraButton').click(); await page.locator('#stopCamera').click();
+  await expect(page.locator('#cameraButton')).toBeEnabled();
+  await page.locator('#cameraButton').click();
+  await page.evaluate(async () => { window.__cameraFixture.pending.shift()(); await Promise.resolve(); await Promise.resolve(); await new Promise(requestAnimationFrame); });
+  await expect(page.locator('#reverseGear')).toBeDisabled();
+  await expect(page.locator('#cameraButton')).toBeDisabled();
+  await page.evaluate(() => window.__cameraFixture.pending.shift()());
+  await expect(page.locator('#calibrateButton')).toBeEnabled();
+  await page.locator('#stopCamera').click();
+  await expect(page.locator('#steerRange')).toBeEnabled();
+});
